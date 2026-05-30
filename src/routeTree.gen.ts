@@ -17,6 +17,7 @@ import { Route as AppChatRouteImport } from './routes/_app.chat'
 import { Route as AppAlertsRouteImport } from './routes/_app.alerts'
 import { Route as AppArtworksNewRouteImport } from './routes/_app.artworks.new'
 import { Route as AppArtworksIdRouteImport } from './routes/_app.artworks.$id'
+import { Route as ApiPublicSensorsIngestRouteImport } from './routes/api/public/sensors/ingest'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -57,6 +58,11 @@ const AppArtworksIdRoute = AppArtworksIdRouteImport.update({
   path: '/artworks/$id',
   getParentRoute: () => AppRoute,
 } as any)
+const ApiPublicSensorsIngestRoute = ApiPublicSensorsIngestRouteImport.update({
+  id: '/api/public/sensors/ingest',
+  path: '/api/public/sensors/ingest',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
@@ -66,6 +72,7 @@ export interface FileRoutesByFullPath {
   '/scan': typeof AppScanRoute
   '/artworks/$id': typeof AppArtworksIdRoute
   '/artworks/new': typeof AppArtworksNewRoute
+  '/api/public/sensors/ingest': typeof ApiPublicSensorsIngestRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
@@ -75,6 +82,7 @@ export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
   '/artworks/$id': typeof AppArtworksIdRoute
   '/artworks/new': typeof AppArtworksNewRoute
+  '/api/public/sensors/ingest': typeof ApiPublicSensorsIngestRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -86,6 +94,7 @@ export interface FileRoutesById {
   '/_app/': typeof AppIndexRoute
   '/_app/artworks/$id': typeof AppArtworksIdRoute
   '/_app/artworks/new': typeof AppArtworksNewRoute
+  '/api/public/sensors/ingest': typeof ApiPublicSensorsIngestRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -97,6 +106,7 @@ export interface FileRouteTypes {
     | '/scan'
     | '/artworks/$id'
     | '/artworks/new'
+    | '/api/public/sensors/ingest'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -106,6 +116,7 @@ export interface FileRouteTypes {
     | '/'
     | '/artworks/$id'
     | '/artworks/new'
+    | '/api/public/sensors/ingest'
   id:
     | '__root__'
     | '/_app'
@@ -116,11 +127,13 @@ export interface FileRouteTypes {
     | '/_app/'
     | '/_app/artworks/$id'
     | '/_app/artworks/new'
+    | '/api/public/sensors/ingest'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   LoginRoute: typeof LoginRoute
+  ApiPublicSensorsIngestRoute: typeof ApiPublicSensorsIngestRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -181,6 +194,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppArtworksIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/api/public/sensors/ingest': {
+      id: '/api/public/sensors/ingest'
+      path: '/api/public/sensors/ingest'
+      fullPath: '/api/public/sensors/ingest'
+      preLoaderRoute: typeof ApiPublicSensorsIngestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -207,6 +227,7 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   LoginRoute: LoginRoute,
+  ApiPublicSensorsIngestRoute: ApiPublicSensorsIngestRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

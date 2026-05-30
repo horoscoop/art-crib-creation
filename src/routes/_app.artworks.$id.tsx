@@ -248,8 +248,15 @@ function NewReadingDialog({ artworkId }: { artworkId: string }) {
   const [open, setOpen] = useState(false);
   const [f, setF] = useState({ humidity_pct: "", temperature_c: "", tilt_deg: "", drift_mm: "", tension_n: "" });
   const submit = async () => {
-    const payload: Record<string, unknown> = { artwork_id: artworkId, source: "manual" };
-    for (const [k, v] of Object.entries(f)) if (v !== "") payload[k] = Number(v);
+    const payload = {
+      artwork_id: artworkId,
+      source: "manual",
+      humidity_pct: f.humidity_pct ? Number(f.humidity_pct) : null,
+      temperature_c: f.temperature_c ? Number(f.temperature_c) : null,
+      tilt_deg: f.tilt_deg ? Number(f.tilt_deg) : null,
+      drift_mm: f.drift_mm ? Number(f.drift_mm) : null,
+      tension_n: f.tension_n ? Number(f.tension_n) : null,
+    };
     const { error } = await supabase.from("sensor_readings").insert(payload);
     if (error) return toast.error(error.message);
     toast.success("Mesure enregistrée");
