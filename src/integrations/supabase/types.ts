@@ -14,7 +14,222 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      alerts: {
+        Row: {
+          artwork_id: string
+          created_at: string
+          id: string
+          kind: Database["public"]["Enums"]["alert_kind"]
+          measured_value: number | null
+          message: string
+          resolved: boolean
+          resolved_at: string | null
+          severity: Database["public"]["Enums"]["alert_severity"]
+          threshold_value: number | null
+        }
+        Insert: {
+          artwork_id: string
+          created_at?: string
+          id?: string
+          kind: Database["public"]["Enums"]["alert_kind"]
+          measured_value?: number | null
+          message: string
+          resolved?: boolean
+          resolved_at?: string | null
+          severity: Database["public"]["Enums"]["alert_severity"]
+          threshold_value?: number | null
+        }
+        Update: {
+          artwork_id?: string
+          created_at?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["alert_kind"]
+          measured_value?: number | null
+          message?: string
+          resolved?: boolean
+          resolved_at?: string | null
+          severity?: Database["public"]["Enums"]["alert_severity"]
+          threshold_value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alerts_artwork_id_fkey"
+            columns: ["artwork_id"]
+            isOneToOne: false
+            referencedRelation: "artworks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      artworks: {
+        Row: {
+          artist: string | null
+          created_at: string
+          id: string
+          install_date: string | null
+          koa_system: string | null
+          location: string | null
+          max_drift_mm: number
+          max_humidity: number
+          max_tilt_deg: number
+          notes: string | null
+          owner_id: string
+          photo_url: string | null
+          title: string
+          updated_at: string
+          wall_type: string | null
+          weight_kg: number
+        }
+        Insert: {
+          artist?: string | null
+          created_at?: string
+          id?: string
+          install_date?: string | null
+          koa_system?: string | null
+          location?: string | null
+          max_drift_mm?: number
+          max_humidity?: number
+          max_tilt_deg?: number
+          notes?: string | null
+          owner_id: string
+          photo_url?: string | null
+          title: string
+          updated_at?: string
+          wall_type?: string | null
+          weight_kg: number
+        }
+        Update: {
+          artist?: string | null
+          created_at?: string
+          id?: string
+          install_date?: string | null
+          koa_system?: string | null
+          location?: string | null
+          max_drift_mm?: number
+          max_humidity?: number
+          max_tilt_deg?: number
+          notes?: string | null
+          owner_id?: string
+          photo_url?: string | null
+          title?: string
+          updated_at?: string
+          wall_type?: string | null
+          weight_kg?: number
+        }
+        Relationships: []
+      }
+      maintenance_logs: {
+        Row: {
+          artwork_id: string
+          created_at: string
+          description: string
+          id: string
+          kind: string
+          performed_at: string
+          performed_by: string | null
+          photo_url: string | null
+        }
+        Insert: {
+          artwork_id: string
+          created_at?: string
+          description: string
+          id?: string
+          kind: string
+          performed_at?: string
+          performed_by?: string | null
+          photo_url?: string | null
+        }
+        Update: {
+          artwork_id?: string
+          created_at?: string
+          description?: string
+          id?: string
+          kind?: string
+          performed_at?: string
+          performed_by?: string | null
+          photo_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "maintenance_logs_artwork_id_fkey"
+            columns: ["artwork_id"]
+            isOneToOne: false
+            referencedRelation: "artworks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          full_name: string | null
+          id: string
+          organization: string | null
+          role: string
+        }
+        Insert: {
+          created_at?: string
+          full_name?: string | null
+          id: string
+          organization?: string | null
+          role?: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          organization?: string | null
+          role?: string
+        }
+        Relationships: []
+      }
+      sensor_readings: {
+        Row: {
+          artwork_id: string
+          created_at: string
+          drift_mm: number | null
+          humidity_pct: number | null
+          id: string
+          recorded_at: string
+          source: string
+          temperature_c: number | null
+          tension_n: number | null
+          tilt_deg: number | null
+        }
+        Insert: {
+          artwork_id: string
+          created_at?: string
+          drift_mm?: number | null
+          humidity_pct?: number | null
+          id?: string
+          recorded_at?: string
+          source?: string
+          temperature_c?: number | null
+          tension_n?: number | null
+          tilt_deg?: number | null
+        }
+        Update: {
+          artwork_id?: string
+          created_at?: string
+          drift_mm?: number | null
+          humidity_pct?: number | null
+          id?: string
+          recorded_at?: string
+          source?: string
+          temperature_c?: number | null
+          tension_n?: number | null
+          tilt_deg?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sensor_readings_artwork_id_fkey"
+            columns: ["artwork_id"]
+            isOneToOne: false
+            referencedRelation: "artworks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +238,14 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      alert_kind:
+        | "humidity"
+        | "tilt"
+        | "drift"
+        | "tension"
+        | "temperature"
+        | "maintenance_due"
+      alert_severity: "info" | "vigilance" | "critical"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +372,16 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      alert_kind: [
+        "humidity",
+        "tilt",
+        "drift",
+        "tension",
+        "temperature",
+        "maintenance_due",
+      ],
+      alert_severity: ["info", "vigilance", "critical"],
+    },
   },
 } as const
