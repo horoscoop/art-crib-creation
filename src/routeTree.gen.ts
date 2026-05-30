@@ -9,61 +9,226 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as AppRouteImport } from './routes/_app'
+import { Route as AppIndexRouteImport } from './routes/_app.index'
+import { Route as AppScanRouteImport } from './routes/_app.scan'
+import { Route as AppChatRouteImport } from './routes/_app.chat'
+import { Route as AppAlertsRouteImport } from './routes/_app.alerts'
+import { Route as AppArtworksNewRouteImport } from './routes/_app.artworks.new'
+import { Route as AppArtworksIdRouteImport } from './routes/_app.artworks.$id'
+import { Route as ApiPublicSensorsIngestRouteImport } from './routes/api/public/sensors/ingest'
 
-const IndexRoute = IndexRouteImport.update({
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppScanRoute = AppScanRouteImport.update({
+  id: '/scan',
+  path: '/scan',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppChatRoute = AppChatRouteImport.update({
+  id: '/chat',
+  path: '/chat',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAlertsRoute = AppAlertsRouteImport.update({
+  id: '/alerts',
+  path: '/alerts',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppArtworksNewRoute = AppArtworksNewRouteImport.update({
+  id: '/artworks/new',
+  path: '/artworks/new',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppArtworksIdRoute = AppArtworksIdRouteImport.update({
+  id: '/artworks/$id',
+  path: '/artworks/$id',
+  getParentRoute: () => AppRoute,
+} as any)
+const ApiPublicSensorsIngestRoute = ApiPublicSensorsIngestRouteImport.update({
+  id: '/api/public/sensors/ingest',
+  path: '/api/public/sensors/ingest',
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof AppIndexRoute
+  '/login': typeof LoginRoute
+  '/alerts': typeof AppAlertsRoute
+  '/chat': typeof AppChatRoute
+  '/scan': typeof AppScanRoute
+  '/artworks/$id': typeof AppArtworksIdRoute
+  '/artworks/new': typeof AppArtworksNewRoute
+  '/api/public/sensors/ingest': typeof ApiPublicSensorsIngestRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/alerts': typeof AppAlertsRoute
+  '/chat': typeof AppChatRoute
+  '/scan': typeof AppScanRoute
+  '/': typeof AppIndexRoute
+  '/artworks/$id': typeof AppArtworksIdRoute
+  '/artworks/new': typeof AppArtworksNewRoute
+  '/api/public/sensors/ingest': typeof ApiPublicSensorsIngestRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/_app': typeof AppRouteWithChildren
+  '/login': typeof LoginRoute
+  '/_app/alerts': typeof AppAlertsRoute
+  '/_app/chat': typeof AppChatRoute
+  '/_app/scan': typeof AppScanRoute
+  '/_app/': typeof AppIndexRoute
+  '/_app/artworks/$id': typeof AppArtworksIdRoute
+  '/_app/artworks/new': typeof AppArtworksNewRoute
+  '/api/public/sensors/ingest': typeof ApiPublicSensorsIngestRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/alerts'
+    | '/chat'
+    | '/scan'
+    | '/artworks/$id'
+    | '/artworks/new'
+    | '/api/public/sensors/ingest'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/login'
+    | '/alerts'
+    | '/chat'
+    | '/scan'
+    | '/'
+    | '/artworks/$id'
+    | '/artworks/new'
+    | '/api/public/sensors/ingest'
+  id:
+    | '__root__'
+    | '/_app'
+    | '/login'
+    | '/_app/alerts'
+    | '/_app/chat'
+    | '/_app/scan'
+    | '/_app/'
+    | '/_app/artworks/$id'
+    | '/_app/artworks/new'
+    | '/api/public/sensors/ingest'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
+  LoginRoute: typeof LoginRoute
+  ApiPublicSensorsIngestRoute: typeof ApiPublicSensorsIngestRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/': {
+      id: '/_app/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/scan': {
+      id: '/_app/scan'
+      path: '/scan'
+      fullPath: '/scan'
+      preLoaderRoute: typeof AppScanRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/chat': {
+      id: '/_app/chat'
+      path: '/chat'
+      fullPath: '/chat'
+      preLoaderRoute: typeof AppChatRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/alerts': {
+      id: '/_app/alerts'
+      path: '/alerts'
+      fullPath: '/alerts'
+      preLoaderRoute: typeof AppAlertsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/artworks/new': {
+      id: '/_app/artworks/new'
+      path: '/artworks/new'
+      fullPath: '/artworks/new'
+      preLoaderRoute: typeof AppArtworksNewRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/artworks/$id': {
+      id: '/_app/artworks/$id'
+      path: '/artworks/$id'
+      fullPath: '/artworks/$id'
+      preLoaderRoute: typeof AppArtworksIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/api/public/sensors/ingest': {
+      id: '/api/public/sensors/ingest'
+      path: '/api/public/sensors/ingest'
+      fullPath: '/api/public/sensors/ingest'
+      preLoaderRoute: typeof ApiPublicSensorsIngestRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
 }
 
+interface AppRouteChildren {
+  AppAlertsRoute: typeof AppAlertsRoute
+  AppChatRoute: typeof AppChatRoute
+  AppScanRoute: typeof AppScanRoute
+  AppIndexRoute: typeof AppIndexRoute
+  AppArtworksIdRoute: typeof AppArtworksIdRoute
+  AppArtworksNewRoute: typeof AppArtworksNewRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppAlertsRoute: AppAlertsRoute,
+  AppChatRoute: AppChatRoute,
+  AppScanRoute: AppScanRoute,
+  AppIndexRoute: AppIndexRoute,
+  AppArtworksIdRoute: AppArtworksIdRoute,
+  AppArtworksNewRoute: AppArtworksNewRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
+  LoginRoute: LoginRoute,
+  ApiPublicSensorsIngestRoute: ApiPublicSensorsIngestRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
