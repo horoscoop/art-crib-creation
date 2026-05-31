@@ -13,8 +13,10 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as AppScanRouteImport } from './routes/_app.scan'
+import { Route as AppGatewaysRouteImport } from './routes/_app.gateways'
 import { Route as AppChatRouteImport } from './routes/_app.chat'
 import { Route as AppAlertsRouteImport } from './routes/_app.alerts'
+import { Route as AppAdminRouteImport } from './routes/_app.admin'
 import { Route as AppArtworksNewRouteImport } from './routes/_app.artworks.new'
 import { Route as AppArtworksIdRouteImport } from './routes/_app.artworks.$id'
 import { Route as ApiPublicSensorsIngestRouteImport } from './routes/api/public/sensors/ingest'
@@ -38,6 +40,11 @@ const AppScanRoute = AppScanRouteImport.update({
   path: '/scan',
   getParentRoute: () => AppRoute,
 } as any)
+const AppGatewaysRoute = AppGatewaysRouteImport.update({
+  id: '/gateways',
+  path: '/gateways',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppChatRoute = AppChatRouteImport.update({
   id: '/chat',
   path: '/chat',
@@ -46,6 +53,11 @@ const AppChatRoute = AppChatRouteImport.update({
 const AppAlertsRoute = AppAlertsRouteImport.update({
   id: '/alerts',
   path: '/alerts',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAdminRoute = AppAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => AppRoute,
 } as any)
 const AppArtworksNewRoute = AppArtworksNewRouteImport.update({
@@ -67,8 +79,10 @@ const ApiPublicSensorsIngestRoute = ApiPublicSensorsIngestRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/login': typeof LoginRoute
+  '/admin': typeof AppAdminRoute
   '/alerts': typeof AppAlertsRoute
   '/chat': typeof AppChatRoute
+  '/gateways': typeof AppGatewaysRoute
   '/scan': typeof AppScanRoute
   '/artworks/$id': typeof AppArtworksIdRoute
   '/artworks/new': typeof AppArtworksNewRoute
@@ -76,8 +90,10 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
+  '/admin': typeof AppAdminRoute
   '/alerts': typeof AppAlertsRoute
   '/chat': typeof AppChatRoute
+  '/gateways': typeof AppGatewaysRoute
   '/scan': typeof AppScanRoute
   '/': typeof AppIndexRoute
   '/artworks/$id': typeof AppArtworksIdRoute
@@ -88,8 +104,10 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
+  '/_app/admin': typeof AppAdminRoute
   '/_app/alerts': typeof AppAlertsRoute
   '/_app/chat': typeof AppChatRoute
+  '/_app/gateways': typeof AppGatewaysRoute
   '/_app/scan': typeof AppScanRoute
   '/_app/': typeof AppIndexRoute
   '/_app/artworks/$id': typeof AppArtworksIdRoute
@@ -101,8 +119,10 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
+    | '/admin'
     | '/alerts'
     | '/chat'
+    | '/gateways'
     | '/scan'
     | '/artworks/$id'
     | '/artworks/new'
@@ -110,8 +130,10 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
+    | '/admin'
     | '/alerts'
     | '/chat'
+    | '/gateways'
     | '/scan'
     | '/'
     | '/artworks/$id'
@@ -121,8 +143,10 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_app'
     | '/login'
+    | '/_app/admin'
     | '/_app/alerts'
     | '/_app/chat'
+    | '/_app/gateways'
     | '/_app/scan'
     | '/_app/'
     | '/_app/artworks/$id'
@@ -166,6 +190,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppScanRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/gateways': {
+      id: '/_app/gateways'
+      path: '/gateways'
+      fullPath: '/gateways'
+      preLoaderRoute: typeof AppGatewaysRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/chat': {
       id: '/_app/chat'
       path: '/chat'
@@ -178,6 +209,13 @@ declare module '@tanstack/react-router' {
       path: '/alerts'
       fullPath: '/alerts'
       preLoaderRoute: typeof AppAlertsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/admin': {
+      id: '/_app/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AppAdminRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/artworks/new': {
@@ -205,8 +243,10 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
+  AppAdminRoute: typeof AppAdminRoute
   AppAlertsRoute: typeof AppAlertsRoute
   AppChatRoute: typeof AppChatRoute
+  AppGatewaysRoute: typeof AppGatewaysRoute
   AppScanRoute: typeof AppScanRoute
   AppIndexRoute: typeof AppIndexRoute
   AppArtworksIdRoute: typeof AppArtworksIdRoute
@@ -214,8 +254,10 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppAdminRoute: AppAdminRoute,
   AppAlertsRoute: AppAlertsRoute,
   AppChatRoute: AppChatRoute,
+  AppGatewaysRoute: AppGatewaysRoute,
   AppScanRoute: AppScanRoute,
   AppIndexRoute: AppIndexRoute,
   AppArtworksIdRoute: AppArtworksIdRoute,
@@ -232,13 +274,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

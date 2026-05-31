@@ -16,9 +16,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
       setSession(s);
       setLoading(false);
+      if (event === "SIGNED_IN" && s?.user) {
+        supabase.from("connection_logs").insert({
+          user_id: s.user.id,
+          email: s.user.email ?? null,
+          event: "sign_in",
+          user_agent: typeof navigator !== "undefined" ? navigator.userAgent : null,
+        }).then(() => {});
+      }
     });
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
