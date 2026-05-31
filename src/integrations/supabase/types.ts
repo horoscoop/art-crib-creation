@@ -64,7 +64,9 @@ export type Database = {
       artworks: {
         Row: {
           artist: string | null
+          baseline: Json | null
           created_at: string
+          hanging_system_id: string | null
           id: string
           install_date: string | null
           koa_system: string | null
@@ -82,7 +84,9 @@ export type Database = {
         }
         Insert: {
           artist?: string | null
+          baseline?: Json | null
           created_at?: string
+          hanging_system_id?: string | null
           id?: string
           install_date?: string | null
           koa_system?: string | null
@@ -100,7 +104,9 @@ export type Database = {
         }
         Update: {
           artist?: string | null
+          baseline?: Json | null
           created_at?: string
+          hanging_system_id?: string | null
           id?: string
           install_date?: string | null
           koa_system?: string | null
@@ -115,6 +121,154 @@ export type Database = {
           updated_at?: string
           wall_type?: string | null
           weight_kg?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "artworks_hanging_system_id_fkey"
+            columns: ["hanging_system_id"]
+            isOneToOne: false
+            referencedRelation: "hanging_systems"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      attachments: {
+        Row: {
+          artwork_id: string
+          created_at: string
+          filename: string
+          id: string
+          mime_type: string | null
+          size_bytes: number | null
+          storage_path: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          artwork_id: string
+          created_at?: string
+          filename: string
+          id?: string
+          mime_type?: string | null
+          size_bytes?: number | null
+          storage_path: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          artwork_id?: string
+          created_at?: string
+          filename?: string
+          id?: string
+          mime_type?: string | null
+          size_bytes?: number | null
+          storage_path?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attachments_artwork_id_fkey"
+            columns: ["artwork_id"]
+            isOneToOne: false
+            referencedRelation: "artworks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      connection_logs: {
+        Row: {
+          created_at: string
+          email: string | null
+          event: string
+          id: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          event: string
+          id?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          event?: string
+          id?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      gateway_artwork_map: {
+        Row: {
+          artwork_id: string
+          gateway_id: string
+          id: string
+          sensor_field_map: Json
+        }
+        Insert: {
+          artwork_id: string
+          gateway_id: string
+          id?: string
+          sensor_field_map?: Json
+        }
+        Update: {
+          artwork_id?: string
+          gateway_id?: string
+          id?: string
+          sensor_field_map?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gateway_artwork_map_artwork_id_fkey"
+            columns: ["artwork_id"]
+            isOneToOne: false
+            referencedRelation: "artworks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gateway_artwork_map_gateway_id_fkey"
+            columns: ["gateway_id"]
+            isOneToOne: false
+            referencedRelation: "sensor_gateways"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hanging_systems: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+          illustration_url: string | null
+          maintenance_interval_years: number | null
+          max_weight_kg: number | null
+          name: string
+          wall_types: string[] | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          illustration_url?: string | null
+          maintenance_interval_years?: number | null
+          max_weight_kg?: number | null
+          name: string
+          wall_types?: string[] | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          illustration_url?: string | null
+          maintenance_interval_years?: number | null
+          max_weight_kg?: number | null
+          name?: string
+          wall_types?: string[] | null
         }
         Relationships: []
       }
@@ -183,6 +337,48 @@ export type Database = {
         }
         Relationships: []
       }
+      sensor_gateways: {
+        Row: {
+          auth_token: string
+          created_at: string
+          endpoint: string | null
+          id: string
+          last_sync_at: string | null
+          name: string
+          owner_id: string
+          payload_mapping: Json
+          protocol: string
+          status: string | null
+          sync_interval_s: number | null
+        }
+        Insert: {
+          auth_token?: string
+          created_at?: string
+          endpoint?: string | null
+          id?: string
+          last_sync_at?: string | null
+          name: string
+          owner_id: string
+          payload_mapping?: Json
+          protocol?: string
+          status?: string | null
+          sync_interval_s?: number | null
+        }
+        Update: {
+          auth_token?: string
+          created_at?: string
+          endpoint?: string | null
+          id?: string
+          last_sync_at?: string | null
+          name?: string
+          owner_id?: string
+          payload_mapping?: Json
+          protocol?: string
+          status?: string | null
+          sync_interval_s?: number | null
+        }
+        Relationships: []
+      }
       sensor_readings: {
         Row: {
           artwork_id: string
@@ -230,12 +426,39 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       alert_kind:
@@ -246,6 +469,7 @@ export type Database = {
         | "temperature"
         | "maintenance_due"
       alert_severity: "info" | "vigilance" | "critical"
+      app_role: "admin" | "conservateur"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -382,6 +606,7 @@ export const Constants = {
         "maintenance_due",
       ],
       alert_severity: ["info", "vigilance", "critical"],
+      app_role: ["admin", "conservateur"],
     },
   },
 } as const
