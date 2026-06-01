@@ -58,6 +58,7 @@ function AdminConsole() {
           { id: "fleet", label: "Parc global", icon: LayoutGrid },
           { id: "logs", label: "Connexions", icon: Activity },
           { id: "exports", label: "Exports", icon: Download },
+          { id: "backups", label: "Sauvegardes", icon: Database },
         ].map(({ id, label, icon: Icon }) => (
           <button key={id} onClick={() => setTab(id as Tab)}
             className={`flex items-center gap-2 px-4 py-2.5 text-[11px] tracking-widest uppercase border-b-2 -mb-px ${tab === id ? "border-foreground text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
@@ -71,6 +72,7 @@ function AdminConsole() {
         {tab === "fleet" && <FleetTab />}
         {tab === "logs" && <LogsTab />}
         {tab === "exports" && <ExportsTab />}
+        {tab === "backups" && <BackupsTab />}
       </div>
     </main>
   );
