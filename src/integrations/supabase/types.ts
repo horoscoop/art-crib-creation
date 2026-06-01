@@ -469,7 +469,7 @@ export type Database = {
         | "temperature"
         | "maintenance_due"
       alert_severity: "info" | "vigilance" | "critical"
-      app_role: "admin" | "conservateur"
+      app_role: "admin" | "conservateur" | "expert_koa"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -606,7 +606,7 @@ export const Constants = {
         "maintenance_due",
       ],
       alert_severity: ["info", "vigilance", "critical"],
-      app_role: ["admin", "conservateur"],
+      app_role: ["admin", "conservateur", "expert_koa"],
     },
   },
 } as const
