@@ -237,3 +237,59 @@ function ExportsTab() {
     </div>
   );
 }
+
+function BackupsTab() {
+  const create = useServerFn(createBackup);
+  const list = useServerFn(listBackups);
+  const dl = useServerFn(downloadBackup);
+  const del = useServerFn(deleteBackup);
+  const qc = useQueryClient();
+  const [busy, setBusy] = useState(false);
+  const { data: rows = [] } = useQuery({ queryKey: ["backups"], queryFn: () => list() });
+
+  const run = async () => {
+    setBusy(true);
+    try { await create(); toast.success("Sauvegarde créée"); qc.invalidateQueries({ queryKey: ["backups"] }); }
+    catch (e: any) { toast.error(e.message); }
+    finally { setBusy(false); }
+  };
+  const download = async (id: string) => {
+    try { const { url } = await dl({ data: { id } }); window.open(url, "_blank"); }
+    catch (e: any) { toast.error(e.message); }
+  };
+  const remove = async (id: string) => {
+    if (!confirm("Supprimer cette sauvegarde ?")) return;
+    await del({ data: { id } });
+    qc.invalidateQueries({ queryKey: ["backups"] });
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-xs text-muted-foreground">Export JSON complet des tables métier. À télécharger et archiver localement.</p>
+        <button disabled={busy} onClick={run} className="text-[11px] uppercase tracking-widest border border-foreground px-3 py-1.5 disabled:opacity-50">
+          {busy ? "En cours…" : "Sauvegarder"}
+        </button>
+      </div>
+      <table className="w-full text-sm">
+        <thead className="text-[10px] uppercase tracking-widest text-muted-foreground border-b border-border">
+          <tr><th className="text-left py-3">Date</th><th className="text-right">Taille</th><th className="text-right">Lignes</th><th></th></tr>
+        </thead>
+        <tbody className="divide-y divide-border">
+          {rows.map((b: any) => (
+            <tr key={b.id}>
+              <td className="py-2 mono text-xs">{formatDateTime(b.created_at)}</td>
+              <td className="text-right mono text-xs">{((b.size_bytes ?? 0) / 1024).toFixed(1)} kB</td>
+              <td className="text-right mono text-xs">{b.rows_count ?? "—"}</td>
+              <td className="text-right space-x-3">
+                <button onClick={() => download(b.id)} className="text-[10px] uppercase tracking-widest underline">Télécharger</button>
+                <button onClick={() => remove(b.id)} className="text-[10px] uppercase tracking-widest text-muted-foreground hover:text-destructive">Supprimer</button>
+              </td>
+            </tr>
+          ))}
+          {rows.length === 0 && <tr><td colSpan={4} className="py-8 text-center text-sm text-muted-foreground">Aucune sauvegarde.</td></tr>}
+        </tbody>
+      </table>
+    </div>
+  );
+}
