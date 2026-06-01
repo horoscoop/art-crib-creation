@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { ChevronLeft, Trash2, Activity } from "lucide-react";
+import { ChevronLeft, Trash2, Activity, Paperclip, FileSignature, ClipboardCheck } from "lucide-react";
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { StatusBadge } from "@/components/koa/status-badge";
 import { computeSeverity, signedPhoto, formatDate, formatDateTime } from "@/lib/koa-helpers";
 import { toast } from "sonner";
+import { NewInspectionDialog } from "@/routes/_app.inspections";
+import { NewExpertiseDialog } from "@/routes/_app.expertises";
 
 export const Route = createFileRoute("/_app/artworks/$id")({
   head: () => ({ meta: [{ title: "Fiche œuvre — KOA Guardian" }] }),
@@ -203,6 +205,33 @@ function ArtworkDetail() {
           </ul>
         </section>
 
+        {/* Suivi périodique */}
+        <section className="mt-10">
+          <div className="flex items-baseline justify-between">
+            <h2 className="serif text-xl flex items-center gap-2"><ClipboardCheck className="size-4" /> Suivi périodique</h2>
+            <NewInspectionDialog artworkId={id} />
+          </div>
+          <InspectionsList artworkId={id} />
+        </section>
+
+        {/* Expertises KOA */}
+        <section className="mt-10">
+          <div className="flex items-baseline justify-between">
+            <h2 className="serif text-xl flex items-center gap-2"><FileSignature className="size-4" /> Expertises KOA</h2>
+            <NewExpertiseDialog artworkId={id} />
+          </div>
+          <ExpertisesList artworkId={id} />
+        </section>
+
+        {/* Pièces jointes */}
+        <section className="mt-10">
+          <div className="flex items-baseline justify-between">
+            <h2 className="serif text-xl flex items-center gap-2"><Paperclip className="size-4" /> Pièces jointes</h2>
+            <AttachmentUpload artworkId={id} />
+          </div>
+          <AttachmentList artworkId={id} />
+        </section>
+
         {/* Webhook info pour IoT */}
         <section className="mt-10 border border-dashed border-border p-4">
           <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-muted-foreground">
@@ -220,6 +249,113 @@ function ArtworkDetail() {
         </section>
       </div>
     </main>
+  );
+}
+
+function InspectionsList({ artworkId }: { artworkId: string }) {
+  const { data: rows = [] } = useQuery({
+    queryKey: ["inspections", artworkId],
+    queryFn: async () => {
+      const { data } = await supabase.from("inspections").select("*").eq("artwork_id", artworkId).order("performed_at", { ascending: false });
+      return data ?? [];
+    },
+  });
+  if (!rows.length) return <p className="mt-3 text-sm text-muted-foreground">Aucune inspection enregistrée.</p>;
+  return (
+    <ul className="mt-3 space-y-3">
+      {rows.map((r: any) => (
+        <li key={r.id} className="border-l border-border pl-4">
+          <p className="text-[10px] mono uppercase tracking-widest text-muted-foreground">
+            {formatDateTime(r.performed_at)} · {r.period_type}
+            {r.next_due_at && <> · prochaine {formatDate(r.next_due_at)}</>}
+          </p>
+          {r.notes && <p className="text-sm mt-1">{r.notes}</p>}
+          <p className="text-[10px] mt-1 text-muted-foreground">Score <span className="mono">{r.score_global != null ? Number(r.score_global).toFixed(2) : "—"}</span></p>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function ExpertisesList({ artworkId }: { artworkId: string }) {
+  const { data: rows = [] } = useQuery({
+    queryKey: ["expertises", artworkId],
+    queryFn: async () => {
+      const { data } = await supabase.from("expertises").select("*").eq("artwork_id", artworkId).order("performed_at", { ascending: false });
+      return data ?? [];
+    },
+  });
+  if (!rows.length) return <p className="mt-3 text-sm text-muted-foreground">Aucune expertise.</p>;
+  return (
+    <ul className="mt-3 space-y-3">
+      {rows.map((r: any) => (
+        <li key={r.id} className="border-l-2 border-foreground/40 pl-4">
+          <p className="text-[10px] mono uppercase tracking-widest text-muted-foreground">{formatDateTime(r.performed_at)} · {r.type}</p>
+          <p className="text-sm mt-1 whitespace-pre-wrap">{r.rapport}</p>
+          {r.recommandations && <p className="text-xs text-muted-foreground mt-1">{r.recommandations}</p>}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function AttachmentUpload({ artworkId }: { artworkId: string }) {
+  const qc = useQueryClient();
+  const onChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files?.length) return;
+    for (const f of Array.from(files)) {
+      const path = `${artworkId}/${Date.now()}-${f.name}`;
+      const { error } = await supabase.storage.from("artwork-attachments").upload(path, f);
+      if (error) { toast.error(error.message); continue; }
+      await supabase.from("attachments").insert({
+        artwork_id: artworkId, storage_path: path, filename: f.name,
+        mime_type: f.type, size_bytes: f.size,
+      });
+    }
+    toast.success("Téléversé");
+    qc.invalidateQueries({ queryKey: ["attachments", artworkId] });
+    e.target.value = "";
+  };
+  return (
+    <label className="text-xs tracking-widest uppercase text-accent cursor-pointer">
+      + Fichier
+      <input type="file" multiple className="hidden" onChange={onChange} />
+    </label>
+  );
+}
+
+function AttachmentList({ artworkId }: { artworkId: string }) {
+  const qc = useQueryClient();
+  const { data: rows = [] } = useQuery({
+    queryKey: ["attachments", artworkId],
+    queryFn: async () => {
+      const { data } = await supabase.from("attachments").select("*").eq("artwork_id", artworkId).order("created_at", { ascending: false });
+      return data ?? [];
+    },
+  });
+  const open = async (path: string) => {
+    const { data } = await supabase.storage.from("artwork-attachments").createSignedUrl(path, 600);
+    if (data?.signedUrl) window.open(data.signedUrl, "_blank");
+  };
+  const remove = async (id: string, path: string) => {
+    if (!confirm("Supprimer ce fichier ?")) return;
+    await supabase.storage.from("artwork-attachments").remove([path]);
+    await supabase.from("attachments").delete().eq("id", id);
+    qc.invalidateQueries({ queryKey: ["attachments", artworkId] });
+  };
+  if (!rows.length) return <p className="mt-3 text-sm text-muted-foreground">Aucun document.</p>;
+  return (
+    <ul className="mt-3 divide-y divide-border border-y border-border">
+      {rows.map((a: any) => (
+        <li key={a.id} className="flex items-center justify-between py-2 text-sm">
+          <button onClick={() => open(a.storage_path)} className="truncate text-left underline-offset-4 hover:underline">{a.filename}</button>
+          <button onClick={() => remove(a.id, a.storage_path)} className="text-muted-foreground hover:text-destructive ml-3">
+            <Trash2 className="size-3.5" />
+          </button>
+        </li>
+      ))}
+    </ul>
   );
 }
 

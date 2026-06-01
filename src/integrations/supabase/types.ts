@@ -173,6 +173,39 @@ export type Database = {
           },
         ]
       }
+      backups: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          notes: string | null
+          rows_count: number | null
+          size_bytes: number | null
+          storage_path: string
+          tables_count: number | null
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          notes?: string | null
+          rows_count?: number | null
+          size_bytes?: number | null
+          storage_path: string
+          tables_count?: number | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          notes?: string | null
+          rows_count?: number | null
+          size_bytes?: number | null
+          storage_path?: string
+          tables_count?: number | null
+        }
+        Relationships: []
+      }
       connection_logs: {
         Row: {
           created_at: string
@@ -197,6 +230,48 @@ export type Database = {
           id?: string
           user_agent?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      expertises: {
+        Row: {
+          artwork_id: string
+          certificat_url: string | null
+          charge_mesuree_kg: number | null
+          created_at: string
+          expert_id: string
+          id: string
+          kit_recommande: string | null
+          performed_at: string
+          rapport: string
+          recommandations: string | null
+          type: string
+        }
+        Insert: {
+          artwork_id: string
+          certificat_url?: string | null
+          charge_mesuree_kg?: number | null
+          created_at?: string
+          expert_id: string
+          id?: string
+          kit_recommande?: string | null
+          performed_at?: string
+          rapport: string
+          recommandations?: string | null
+          type?: string
+        }
+        Update: {
+          artwork_id?: string
+          certificat_url?: string | null
+          charge_mesuree_kg?: number | null
+          created_at?: string
+          expert_id?: string
+          id?: string
+          kit_recommande?: string | null
+          performed_at?: string
+          rapport?: string
+          recommandations?: string | null
+          type?: string
         }
         Relationships: []
       }
@@ -269,6 +344,45 @@ export type Database = {
           max_weight_kg?: number | null
           name?: string
           wall_types?: string[] | null
+        }
+        Relationships: []
+      }
+      inspections: {
+        Row: {
+          artwork_id: string
+          created_at: string
+          id: string
+          inspector_id: string
+          next_due_at: string | null
+          notes: string | null
+          performed_at: string
+          period_type: string
+          score_global: number | null
+          signatures: Json
+        }
+        Insert: {
+          artwork_id: string
+          created_at?: string
+          id?: string
+          inspector_id: string
+          next_due_at?: string | null
+          notes?: string | null
+          performed_at?: string
+          period_type?: string
+          score_global?: number | null
+          signatures?: Json
+        }
+        Update: {
+          artwork_id?: string
+          created_at?: string
+          id?: string
+          inspector_id?: string
+          next_due_at?: string | null
+          notes?: string | null
+          performed_at?: string
+          period_type?: string
+          score_global?: number | null
+          signatures?: Json
         }
         Relationships: []
       }
@@ -469,7 +583,7 @@ export type Database = {
         | "temperature"
         | "maintenance_due"
       alert_severity: "info" | "vigilance" | "critical"
-      app_role: "admin" | "conservateur"
+      app_role: "admin" | "conservateur" | "expert_koa"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -606,7 +720,7 @@ export const Constants = {
         "maintenance_due",
       ],
       alert_severity: ["info", "vigilance", "critical"],
-      app_role: ["admin", "conservateur"],
+      app_role: ["admin", "conservateur", "expert_koa"],
     },
   },
 } as const
