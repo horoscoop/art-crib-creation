@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { ChevronLeft, Trash2, Activity } from "lucide-react";
+import { ChevronLeft, Trash2, Activity, Paperclip, FileSignature, ClipboardCheck } from "lucide-react";
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { StatusBadge } from "@/components/koa/status-badge";
 import { computeSeverity, signedPhoto, formatDate, formatDateTime } from "@/lib/koa-helpers";
 import { toast } from "sonner";
+import { NewInspectionDialog } from "@/routes/_app.inspections";
+import { NewExpertiseDialog } from "@/routes/_app.expertises";
 
 export const Route = createFileRoute("/_app/artworks/$id")({
   head: () => ({ meta: [{ title: "Fiche œuvre — KOA Guardian" }] }),
