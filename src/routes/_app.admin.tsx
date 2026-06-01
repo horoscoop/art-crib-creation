@@ -22,7 +22,7 @@ export const Route = createFileRoute("/_app/admin")({
   component: AdminConsole,
 });
 
-type Tab = "users" | "fleet" | "logs" | "exports";
+type Tab = "users" | "fleet" | "logs" | "exports" | "backups";
 
 function AdminConsole() {
   const isAdmin = useIsAdmin();
