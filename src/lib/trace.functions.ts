@@ -89,7 +89,7 @@ export const appendTraceEvent = createServerFn({ method: "POST" })
       artwork_id: data.artwork_id,
       seq,
       event_type: data.event_type,
-      payload: data.payload,
+      payload: data.payload as never,
       actor_id: userId,
       prev_hash,
       hash,
