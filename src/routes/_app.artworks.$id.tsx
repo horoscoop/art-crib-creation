@@ -235,6 +235,9 @@ function ArtworkDetail() {
           <AttachmentList artworkId={id} />
         </section>
 
+        {/* KOA Trace — carte d'identité phygitale */}
+        <TraceSection artwork={artwork} />
+
         {/* Webhook info pour IoT */}
         <section className="mt-10 border border-dashed border-border p-4">
           <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-muted-foreground">
