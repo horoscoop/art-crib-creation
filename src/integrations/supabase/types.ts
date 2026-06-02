@@ -74,6 +74,7 @@ export type Database = {
           max_drift_mm: number
           max_humidity: number
           max_tilt_deg: number
+          nfc_id: string
           notes: string | null
           owner_id: string
           photo_url: string | null
@@ -94,6 +95,7 @@ export type Database = {
           max_drift_mm?: number
           max_humidity?: number
           max_tilt_deg?: number
+          nfc_id?: string
           notes?: string | null
           owner_id: string
           photo_url?: string | null
@@ -114,6 +116,7 @@ export type Database = {
           max_drift_mm?: number
           max_humidity?: number
           max_tilt_deg?: number
+          nfc_id?: string
           notes?: string | null
           owner_id?: string
           photo_url?: string | null
@@ -540,6 +543,50 @@ export type Database = {
           },
         ]
       }
+      trace_events: {
+        Row: {
+          actor_id: string | null
+          artwork_id: string
+          created_at: string
+          event_type: string
+          hash: string
+          id: string
+          payload: Json
+          prev_hash: string | null
+          seq: number
+        }
+        Insert: {
+          actor_id?: string | null
+          artwork_id: string
+          created_at?: string
+          event_type: string
+          hash: string
+          id?: string
+          payload?: Json
+          prev_hash?: string | null
+          seq: number
+        }
+        Update: {
+          actor_id?: string | null
+          artwork_id?: string
+          created_at?: string
+          event_type?: string
+          hash?: string
+          id?: string
+          payload?: Json
+          prev_hash?: string | null
+          seq?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trace_events_artwork_id_fkey"
+            columns: ["artwork_id"]
+            isOneToOne: false
+            referencedRelation: "artworks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -566,6 +613,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_trace_passport: { Args: { _nfc_id: string }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

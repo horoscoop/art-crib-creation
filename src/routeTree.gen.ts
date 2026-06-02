@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
+import { Route as TraceNfcIdRouteImport } from './routes/trace.$nfcId'
 import { Route as AppVisionRouteImport } from './routes/_app.vision'
 import { Route as AppScanRouteImport } from './routes/_app.scan'
 import { Route as AppInspectionsRouteImport } from './routes/_app.inspections'
@@ -37,6 +38,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AppRoute,
+} as any)
+const TraceNfcIdRoute = TraceNfcIdRouteImport.update({
+  id: '/trace/$nfcId',
+  path: '/trace/$nfcId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AppVisionRoute = AppVisionRouteImport.update({
   id: '/vision',
@@ -105,6 +111,7 @@ export interface FileRoutesByFullPath {
   '/inspections': typeof AppInspectionsRoute
   '/scan': typeof AppScanRoute
   '/vision': typeof AppVisionRoute
+  '/trace/$nfcId': typeof TraceNfcIdRoute
   '/artworks/$id': typeof AppArtworksIdRoute
   '/artworks/new': typeof AppArtworksNewRoute
   '/api/public/sensors/ingest': typeof ApiPublicSensorsIngestRoute
@@ -119,6 +126,7 @@ export interface FileRoutesByTo {
   '/inspections': typeof AppInspectionsRoute
   '/scan': typeof AppScanRoute
   '/vision': typeof AppVisionRoute
+  '/trace/$nfcId': typeof TraceNfcIdRoute
   '/': typeof AppIndexRoute
   '/artworks/$id': typeof AppArtworksIdRoute
   '/artworks/new': typeof AppArtworksNewRoute
@@ -136,6 +144,7 @@ export interface FileRoutesById {
   '/_app/inspections': typeof AppInspectionsRoute
   '/_app/scan': typeof AppScanRoute
   '/_app/vision': typeof AppVisionRoute
+  '/trace/$nfcId': typeof TraceNfcIdRoute
   '/_app/': typeof AppIndexRoute
   '/_app/artworks/$id': typeof AppArtworksIdRoute
   '/_app/artworks/new': typeof AppArtworksNewRoute
@@ -154,6 +163,7 @@ export interface FileRouteTypes {
     | '/inspections'
     | '/scan'
     | '/vision'
+    | '/trace/$nfcId'
     | '/artworks/$id'
     | '/artworks/new'
     | '/api/public/sensors/ingest'
@@ -168,6 +178,7 @@ export interface FileRouteTypes {
     | '/inspections'
     | '/scan'
     | '/vision'
+    | '/trace/$nfcId'
     | '/'
     | '/artworks/$id'
     | '/artworks/new'
@@ -184,6 +195,7 @@ export interface FileRouteTypes {
     | '/_app/inspections'
     | '/_app/scan'
     | '/_app/vision'
+    | '/trace/$nfcId'
     | '/_app/'
     | '/_app/artworks/$id'
     | '/_app/artworks/new'
@@ -193,6 +205,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   LoginRoute: typeof LoginRoute
+  TraceNfcIdRoute: typeof TraceNfcIdRoute
   ApiPublicSensorsIngestRoute: typeof ApiPublicSensorsIngestRoute
 }
 
@@ -218,6 +231,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/trace/$nfcId': {
+      id: '/trace/$nfcId'
+      path: '/trace/$nfcId'
+      fullPath: '/trace/$nfcId'
+      preLoaderRoute: typeof TraceNfcIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_app/vision': {
       id: '/_app/vision'
@@ -332,6 +352,7 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   LoginRoute: LoginRoute,
+  TraceNfcIdRoute: TraceNfcIdRoute,
   ApiPublicSensorsIngestRoute: ApiPublicSensorsIngestRoute,
 }
 export const routeTree = rootRouteImport
