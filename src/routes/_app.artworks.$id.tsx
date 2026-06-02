@@ -365,6 +365,86 @@ function AttachmentList({ artworkId }: { artworkId: string }) {
   );
 }
 
+function TraceSection({ artwork }: { artwork: any }) {
+  const [transferOpen, setTransferOpen] = useState(false);
+  const [email, setEmail] = useState("");
+  const [note, setNote] = useState("");
+  const [busy, setBusy] = useState(false);
+  const doTransfer = useServerFn(transferArtwork);
+  const qc = useQueryClient();
+
+  const traceUrl = typeof window !== "undefined" ? `${window.location.origin}/trace/${artwork.nfc_id}` : `/trace/${artwork.nfc_id}`;
+
+  const downloadCert = async () => {
+    setBusy(true);
+    try {
+      const blob = await generateCertificatePdf({
+        title: artwork.title,
+        artist: artwork.artist,
+        nfcId: artwork.nfc_id,
+        koaSystem: artwork.koa_system,
+        installDate: artwork.install_date,
+        baseUrl: typeof window !== "undefined" ? window.location.origin : "",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = `certificat-${artwork.nfc_id}.pdf`; a.click();
+      URL.revokeObjectURL(url);
+    } finally { setBusy(false); }
+  };
+
+  const submitTransfer = async () => {
+    if (!email) return;
+    setBusy(true);
+    try {
+      await doTransfer({ data: { artwork_id: artwork.id, new_owner_email: email, note: note || undefined } });
+      toast.success("Propriété transférée");
+      setTransferOpen(false); setEmail(""); setNote("");
+      qc.invalidateQueries({ queryKey: ["artwork", artwork.id] });
+    } catch (e: any) {
+      toast.error(e.message ?? "Échec du transfert");
+    } finally { setBusy(false); }
+  };
+
+  return (
+    <section className="mt-10">
+      <h2 className="serif text-xl flex items-center gap-2"><ShieldCheck className="size-4" /> KOA Trace</h2>
+      <p className="text-xs text-muted-foreground mt-1">Carte d'identité phygitale vérifiable.</p>
+      <dl className="mt-3 grid grid-cols-2 gap-y-2 text-sm">
+        <Meta label="ID NFC" value={<span className="mono text-xs">{artwork.nfc_id}</span>} />
+        <Meta label="URL publique" value={<a href={`/trace/${artwork.nfc_id}`} target="_blank" rel="noreferrer" className="underline text-xs break-all">{traceUrl}</a>} />
+      </dl>
+      <div className="mt-4 flex gap-2">
+        <Button onClick={downloadCert} disabled={busy} variant="outline" className="rounded-sm text-xs tracking-widest uppercase h-9">
+          <Download className="size-3.5 mr-1" /> Certificat PDF
+        </Button>
+        <Dialog open={transferOpen} onOpenChange={setTransferOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline" className="rounded-sm text-xs tracking-widest uppercase h-9">
+              <ArrowRightLeft className="size-3.5 mr-1" /> Transférer
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-sm">
+            <DialogHeader><DialogTitle className="serif text-2xl font-normal">Transfert de propriété</DialogTitle></DialogHeader>
+            <div className="space-y-3">
+              <div>
+                <Label className="text-[10px] tracking-widest uppercase text-muted-foreground">Email du nouveau propriétaire</Label>
+                <Input value={email} onChange={(e) => setEmail(e.target.value)} type="email" className="mt-1 rounded-sm border-0 border-b border-border bg-transparent px-0 h-9" />
+              </div>
+              <div>
+                <Label className="text-[10px] tracking-widest uppercase text-muted-foreground">Note (optionnel)</Label>
+                <Textarea value={note} onChange={(e) => setNote(e.target.value)} rows={3} className="mt-1 rounded-sm border-0 border-b border-border bg-transparent px-0" />
+              </div>
+              <p className="text-[10px] text-muted-foreground">Réservé aux administrateurs et experts KOA. L'événement sera horodaté et chaîné au registre.</p>
+              <Button onClick={submitTransfer} disabled={busy} className="w-full rounded-sm h-10 text-xs tracking-widest uppercase">Confirmer</Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </section>
+  );
+}
+
 function Meta({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div>
