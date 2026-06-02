@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
+import { Route as AppVisionRouteImport } from './routes/_app.vision'
 import { Route as AppScanRouteImport } from './routes/_app.scan'
 import { Route as AppInspectionsRouteImport } from './routes/_app.inspections'
 import { Route as AppGatewaysRouteImport } from './routes/_app.gateways'
@@ -35,6 +36,11 @@ const AppRoute = AppRouteImport.update({
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppVisionRoute = AppVisionRouteImport.update({
+  id: '/vision',
+  path: '/vision',
   getParentRoute: () => AppRoute,
 } as any)
 const AppScanRoute = AppScanRouteImport.update({
@@ -98,6 +104,7 @@ export interface FileRoutesByFullPath {
   '/gateways': typeof AppGatewaysRoute
   '/inspections': typeof AppInspectionsRoute
   '/scan': typeof AppScanRoute
+  '/vision': typeof AppVisionRoute
   '/artworks/$id': typeof AppArtworksIdRoute
   '/artworks/new': typeof AppArtworksNewRoute
   '/api/public/sensors/ingest': typeof ApiPublicSensorsIngestRoute
@@ -111,6 +118,7 @@ export interface FileRoutesByTo {
   '/gateways': typeof AppGatewaysRoute
   '/inspections': typeof AppInspectionsRoute
   '/scan': typeof AppScanRoute
+  '/vision': typeof AppVisionRoute
   '/': typeof AppIndexRoute
   '/artworks/$id': typeof AppArtworksIdRoute
   '/artworks/new': typeof AppArtworksNewRoute
@@ -127,6 +135,7 @@ export interface FileRoutesById {
   '/_app/gateways': typeof AppGatewaysRoute
   '/_app/inspections': typeof AppInspectionsRoute
   '/_app/scan': typeof AppScanRoute
+  '/_app/vision': typeof AppVisionRoute
   '/_app/': typeof AppIndexRoute
   '/_app/artworks/$id': typeof AppArtworksIdRoute
   '/_app/artworks/new': typeof AppArtworksNewRoute
@@ -144,6 +153,7 @@ export interface FileRouteTypes {
     | '/gateways'
     | '/inspections'
     | '/scan'
+    | '/vision'
     | '/artworks/$id'
     | '/artworks/new'
     | '/api/public/sensors/ingest'
@@ -157,6 +167,7 @@ export interface FileRouteTypes {
     | '/gateways'
     | '/inspections'
     | '/scan'
+    | '/vision'
     | '/'
     | '/artworks/$id'
     | '/artworks/new'
@@ -172,6 +183,7 @@ export interface FileRouteTypes {
     | '/_app/gateways'
     | '/_app/inspections'
     | '/_app/scan'
+    | '/_app/vision'
     | '/_app/'
     | '/_app/artworks/$id'
     | '/_app/artworks/new'
@@ -205,6 +217,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/vision': {
+      id: '/_app/vision'
+      path: '/vision'
+      fullPath: '/vision'
+      preLoaderRoute: typeof AppVisionRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/scan': {
@@ -288,6 +307,7 @@ interface AppRouteChildren {
   AppGatewaysRoute: typeof AppGatewaysRoute
   AppInspectionsRoute: typeof AppInspectionsRoute
   AppScanRoute: typeof AppScanRoute
+  AppVisionRoute: typeof AppVisionRoute
   AppIndexRoute: typeof AppIndexRoute
   AppArtworksIdRoute: typeof AppArtworksIdRoute
   AppArtworksNewRoute: typeof AppArtworksNewRoute
@@ -301,6 +321,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppGatewaysRoute: AppGatewaysRoute,
   AppInspectionsRoute: AppInspectionsRoute,
   AppScanRoute: AppScanRoute,
+  AppVisionRoute: AppVisionRoute,
   AppIndexRoute: AppIndexRoute,
   AppArtworksIdRoute: AppArtworksIdRoute,
   AppArtworksNewRoute: AppArtworksNewRoute,
