@@ -370,10 +370,20 @@ function TraceSection({ artwork }: { artwork: any }) {
   const [email, setEmail] = useState("");
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
+  const [qrUrl, setQrUrl] = useState<string | null>(null);
   const doTransfer = useServerFn(transferArtwork);
   const qc = useQueryClient();
 
   const traceUrl = typeof window !== "undefined" ? `${window.location.origin}/trace/${artwork.nfc_id}` : `/trace/${artwork.nfc_id}`;
+
+  useEffect(() => {
+    let cancelled = false;
+    import("qrcode").then(({ default: QRCode }) =>
+      QRCode.toDataURL(traceUrl, { margin: 1, width: 320, color: { dark: "#000000", light: "#ffffff" } })
+        .then((u) => { if (!cancelled) setQrUrl(u); })
+    );
+    return () => { cancelled = true; };
+  }, [traceUrl]);
 
   const downloadCert = async () => {
     setBusy(true);
@@ -393,6 +403,12 @@ function TraceSection({ artwork }: { artwork: any }) {
     } finally { setBusy(false); }
   };
 
+  const downloadQr = () => {
+    if (!qrUrl) return;
+    const a = document.createElement("a");
+    a.href = qrUrl; a.download = `qr-${artwork.nfc_id}.png`; a.click();
+  };
+
   const submitTransfer = async () => {
     if (!email) return;
     setBusy(true);
@@ -410,14 +426,29 @@ function TraceSection({ artwork }: { artwork: any }) {
     <section className="mt-10">
       <h2 className="serif text-xl flex items-center gap-2"><ShieldCheck className="size-4" /> KOA Trace</h2>
       <p className="text-xs text-muted-foreground mt-1">Carte d'identité phygitale vérifiable.</p>
-      <dl className="mt-3 grid grid-cols-2 gap-y-2 text-sm">
-        <Meta label="ID NFC" value={<span className="mono text-xs">{artwork.nfc_id}</span>} />
-        <Meta label="URL publique" value={<a href={`/trace/${artwork.nfc_id}`} target="_blank" rel="noreferrer" className="underline text-xs break-all">{traceUrl}</a>} />
-      </dl>
-      <div className="mt-4 flex gap-2">
+
+      <div className="mt-4 flex gap-4 items-start">
+        {qrUrl ? (
+          <button onClick={downloadQr} title="Télécharger le QR code" className="shrink-0 border border-border bg-white p-2">
+            <img src={qrUrl} alt={`QR code ${artwork.title}`} className="size-28 block" />
+          </button>
+        ) : (
+          <div className="shrink-0 size-32 border border-dashed border-border" />
+        )}
+        <dl className="flex-1 grid grid-cols-1 gap-y-2 text-sm">
+          <Meta label="ID NFC" value={<span className="mono text-xs">{artwork.nfc_id}</span>} />
+          <Meta label="URL publique" value={<a href={`/trace/${artwork.nfc_id}`} target="_blank" rel="noreferrer" className="underline text-xs break-all">{traceUrl}</a>} />
+        </dl>
+      </div>
+
+      <div className="mt-4 flex flex-wrap gap-2">
         <Button onClick={downloadCert} disabled={busy} variant="outline" className="rounded-sm text-xs tracking-widest uppercase h-9">
           <Download className="size-3.5 mr-1" /> Certificat PDF
         </Button>
+        <Button onClick={downloadQr} disabled={!qrUrl} variant="outline" className="rounded-sm text-xs tracking-widest uppercase h-9">
+          <Download className="size-3.5 mr-1" /> QR PNG
+        </Button>
+
         <Dialog open={transferOpen} onOpenChange={setTransferOpen}>
           <DialogTrigger asChild>
             <Button variant="outline" className="rounded-sm text-xs tracking-widest uppercase h-9">
