@@ -11,6 +11,7 @@ import {
   listAllArtworksAdmin,
   updateArtworkThresholdsAdmin,
   listConnectionLogsAdmin,
+  clearConnectionLogsAdmin,
   listOwnersAdmin,
 } from "@/lib/admin.functions";
 import { exportClientReport } from "@/lib/exports.functions";
@@ -174,25 +175,44 @@ function FleetRow({ w, onSave }: { w: any; onSave: (id: string, v: any) => void 
 
 function LogsTab() {
   const list = useServerFn(listConnectionLogsAdmin);
+  const clear = useServerFn(clearConnectionLogsAdmin);
+  const qc = useQueryClient();
   const { data: logs = [] } = useQuery({ queryKey: ["admin-logs"], queryFn: () => list() });
+  const reset = async () => {
+    if (!confirm("Effacer définitivement l'historique des connexions ?")) return;
+    try {
+      await clear();
+      toast.success("Historique de connexion effacé");
+      qc.invalidateQueries({ queryKey: ["admin-logs"] });
+    } catch (e: any) { toast.error(e.message); }
+  };
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead className="text-[10px] uppercase tracking-widest text-muted-foreground border-b border-border">
-          <tr><th className="text-left py-3">Date</th><th className="text-left">Email</th><th className="text-left">Événement</th><th className="text-left">Agent</th></tr>
-        </thead>
-        <tbody className="divide-y divide-border">
-          {logs.map((l: any) => (
-            <tr key={l.id}>
-              <td className="py-2 mono text-xs">{new Date(l.created_at).toLocaleString("fr-FR")}</td>
-              <td className="mono text-xs">{l.email ?? "—"}</td>
-              <td><span className="text-[10px] uppercase tracking-widest border border-border px-2 py-0.5">{l.event}</span></td>
-              <td className="text-xs text-muted-foreground truncate max-w-[260px]">{l.user_agent ?? "—"}</td>
-            </tr>
-          ))}
-          {logs.length === 0 && <tr><td colSpan={4} className="py-8 text-center text-sm text-muted-foreground">Aucune connexion enregistrée.</td></tr>}
-        </tbody>
-      </table>
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-xs text-muted-foreground">{logs.length} entrée{logs.length > 1 ? "s" : ""}</p>
+        <button onClick={reset} disabled={logs.length === 0}
+          className="text-[11px] uppercase tracking-widest border border-border px-3 py-1.5 hover:border-destructive hover:text-destructive disabled:opacity-40">
+          Remise à zéro
+        </button>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="text-[10px] uppercase tracking-widest text-muted-foreground border-b border-border">
+            <tr><th className="text-left py-3">Date</th><th className="text-left">Email</th><th className="text-left">Événement</th><th className="text-left">Agent</th></tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {logs.map((l: any) => (
+              <tr key={l.id}>
+                <td className="py-2 mono text-xs">{new Date(l.created_at).toLocaleString("fr-FR")}</td>
+                <td className="mono text-xs">{l.email ?? "—"}</td>
+                <td><span className="text-[10px] uppercase tracking-widest border border-border px-2 py-0.5">{l.event}</span></td>
+                <td className="text-xs text-muted-foreground truncate max-w-[260px]">{l.user_agent ?? "—"}</td>
+              </tr>
+            ))}
+            {logs.length === 0 && <tr><td colSpan={4} className="py-8 text-center text-sm text-muted-foreground">Aucune connexion enregistrée.</td></tr>}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
