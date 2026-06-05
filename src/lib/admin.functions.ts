@@ -103,3 +103,16 @@ export const listOwnersAdmin = createServerFn({ method: "GET" })
     const { data: usersRes } = await supabaseAdmin.auth.admin.listUsers({ perPage: 200 });
     return usersRes.users.map((u) => ({ id: u.id, email: u.email ?? "" }));
   });
+
+export const clearConnectionLogsAdmin = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.userId);
+    const { error } = await supabaseAdmin
+      .from("connection_logs")
+      .delete()
+      .gt("created_at", "1970-01-01");
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
