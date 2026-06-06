@@ -95,40 +95,55 @@ function UsersTab() {
   const qc = useQueryClient();
   const { data: users = [] } = useQuery({ queryKey: ["admin-users"], queryFn: () => list() });
 
-  const toggle = async (userId: string, isAdminRole: boolean) => {
-    await setRole({ data: { userId, role: "admin", grant: !isAdminRole } });
-    toast.success(isAdminRole ? "Admin retiré" : "Admin accordé");
-    qc.invalidateQueries({ queryKey: ["admin-users"] });
+  const toggle = async (userId: string, role: typeof ASSIGNABLE_ROLES[number], grant: boolean) => {
+    try {
+      await setRole({ data: { userId, role, grant } });
+      toast.success(grant ? `Rôle ${ROLE_LABELS[role]} accordé` : `Rôle ${ROLE_LABELS[role]} retiré`);
+      qc.invalidateQueries({ queryKey: ["admin-users"] });
+    } catch (e: any) {
+      toast.error(e.message ?? "Erreur");
+    }
   };
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead className="text-[10px] uppercase tracking-widest text-muted-foreground border-b border-border">
-          <tr><th className="text-left py-3">Email</th><th className="text-left">Organisation</th><th className="text-left">Rôles</th><th></th></tr>
-        </thead>
-        <tbody className="divide-y divide-border">
-          {users.map((u) => {
-            const isAdminRole = u.roles.includes("admin");
-            return (
+    <div>
+      <p className="text-xs text-muted-foreground mb-4">
+        Coche les rôles à attribuer à chaque utilisateur. Un même compte peut cumuler plusieurs rôles.
+      </p>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="text-[10px] uppercase tracking-widest text-muted-foreground border-b border-border">
+            <tr>
+              <th className="text-left py-3">Email</th>
+              <th className="text-left">Organisation</th>
+              {ASSIGNABLE_ROLES.map((r) => (
+                <th key={r} className="text-center px-1">{ROLE_LABELS[r]}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {users.map((u) => (
               <tr key={u.id}>
                 <td className="py-3 mono text-xs">{u.email}</td>
-                <td>{u.organization ?? "—"}</td>
-                <td>
-                  {u.roles.map((r) => (
-                    <span key={r} className={`inline-block text-[10px] uppercase tracking-widest px-2 py-0.5 mr-1 border ${r === "admin" ? "border-foreground" : "border-border text-muted-foreground"}`}>{r}</span>
-                  ))}
-                </td>
-                <td className="text-right">
-                  <button onClick={() => toggle(u.id, isAdminRole)} className="text-[10px] uppercase tracking-widest underline">
-                    {isAdminRole ? "Retirer admin" : "Promouvoir admin"}
-                  </button>
-                </td>
+                <td className="text-xs">{u.organization ?? "—"}</td>
+                {ASSIGNABLE_ROLES.map((r) => {
+                  const has = u.roles.includes(r);
+                  return (
+                    <td key={r} className="text-center px-1">
+                      <input
+                        type="checkbox"
+                        checked={has}
+                        onChange={() => toggle(u.id, r, !has)}
+                        className="size-4 accent-foreground cursor-pointer"
+                      />
+                    </td>
+                  );
+                })}
               </tr>
-            );
-          })}
-        </tbody>
-      </table>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
