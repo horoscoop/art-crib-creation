@@ -175,9 +175,22 @@ function ArtworkCard({ a, severity }: { a: ArtworkRow; severity: "ok" | "vigilan
               <StatusBadge severity={severity} />
             </div>
             <p className="text-xs text-muted-foreground mt-1 truncate">{a.artist ?? "—"}</p>
-            <p className="text-[11px] text-muted-foreground mt-2">
-              {a.location ?? "Lieu non renseigné"} · <span className="mono">{a.weight_kg} kg</span>
+            <p className="text-[11px] text-muted-foreground mt-2 truncate">
+              {[a.site, a.room, a.zone].filter(Boolean).join(" · ") || a.location || "Lieu non renseigné"}
+              {" · "}<span className="mono">{a.weight_kg} kg</span>
             </p>
+            <div className="mt-1.5 flex gap-1.5 flex-wrap">
+              {a.criticality && a.criticality !== "standard" && (
+                <span className={`text-[9px] uppercase tracking-widest px-1.5 py-0.5 border ${a.criticality === "critique" ? "border-destructive text-destructive" : "border-vigilance text-vigilance"}`}>
+                  {a.criticality === "critique" ? "Critique" : "Élevée"}
+                </span>
+              )}
+              {a.fixation_type && (
+                <span className="text-[9px] uppercase tracking-widest px-1.5 py-0.5 border border-border text-muted-foreground">
+                  {a.fixation_type}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </Link>
