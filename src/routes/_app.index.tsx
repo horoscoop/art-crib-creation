@@ -15,16 +15,21 @@ export const Route = createFileRoute("/_app/")({
 type ArtworkRow = {
   id: string; title: string; artist: string | null; location: string | null;
   weight_kg: number; photo_url: string | null;
+  site: string | null; room: string | null; zone: string | null;
+  fixation_type: string | null; criticality: string | null;
 };
 
 function Dashboard() {
   const { user, signOut } = useAuth();
+  const [search, setSearch] = useState("");
+  const [siteFilter, setSiteFilter] = useState<string>("all");
+  const [critFilter, setCritFilter] = useState<string>("all");
 
-  const { data: artworks = [] } = useQuery({
+  const { data: artworksRaw = [] } = useQuery({
     queryKey: ["artworks", user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("artworks").select("id,title,artist,location,weight_kg,photo_url")
+        .from("artworks").select("id,title,artist,location,weight_kg,photo_url,site,room,zone,fixation_type,criticality")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data as ArtworkRow[];
