@@ -66,10 +66,13 @@ export type Database = {
           artist: string | null
           baseline: Json | null
           created_at: string
+          criticality: string
+          fixation_type: string | null
           hanging_system_id: string | null
           id: string
           install_date: string | null
           koa_system: string | null
+          last_check_at: string | null
           location: string | null
           max_drift_mm: number
           max_humidity: number
@@ -78,19 +81,25 @@ export type Database = {
           notes: string | null
           owner_id: string
           photo_url: string | null
+          room: string | null
+          site: string | null
           title: string
           updated_at: string
           wall_type: string | null
           weight_kg: number
+          zone: string | null
         }
         Insert: {
           artist?: string | null
           baseline?: Json | null
           created_at?: string
+          criticality?: string
+          fixation_type?: string | null
           hanging_system_id?: string | null
           id?: string
           install_date?: string | null
           koa_system?: string | null
+          last_check_at?: string | null
           location?: string | null
           max_drift_mm?: number
           max_humidity?: number
@@ -99,19 +108,25 @@ export type Database = {
           notes?: string | null
           owner_id: string
           photo_url?: string | null
+          room?: string | null
+          site?: string | null
           title: string
           updated_at?: string
           wall_type?: string | null
           weight_kg: number
+          zone?: string | null
         }
         Update: {
           artist?: string | null
           baseline?: Json | null
           created_at?: string
+          criticality?: string
+          fixation_type?: string | null
           hanging_system_id?: string | null
           id?: string
           install_date?: string | null
           koa_system?: string | null
+          last_check_at?: string | null
           location?: string | null
           max_drift_mm?: number
           max_humidity?: number
@@ -120,10 +135,13 @@ export type Database = {
           notes?: string | null
           owner_id?: string
           photo_url?: string | null
+          room?: string | null
+          site?: string | null
           title?: string
           updated_at?: string
           wall_type?: string | null
           weight_kg?: number
+          zone?: string | null
         }
         Relationships: [
           {
@@ -631,7 +649,13 @@ export type Database = {
         | "temperature"
         | "maintenance_due"
       alert_severity: "info" | "vigilance" | "critical"
-      app_role: "admin" | "conservateur" | "expert_koa"
+      app_role:
+        | "admin"
+        | "conservateur"
+        | "expert_koa"
+        | "musee"
+        | "galerie"
+        | "technicien"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -768,7 +792,14 @@ export const Constants = {
         "maintenance_due",
       ],
       alert_severity: ["info", "vigilance", "critical"],
-      app_role: ["admin", "conservateur", "expert_koa"],
+      app_role: [
+        "admin",
+        "conservateur",
+        "expert_koa",
+        "musee",
+        "galerie",
+        "technicien",
+      ],
     },
   },
 } as const

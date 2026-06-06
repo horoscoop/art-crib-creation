@@ -22,7 +22,9 @@ function NewArtwork() {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [form, setForm] = useState({
     title: "", artist: "", location: "",
+    site: "", room: "", zone: "",
     weight_kg: "", wall_type: "Placo", koa_system: "",
+    fixation_type: "", criticality: "standard",
     install_date: "", notes: "",
   });
 
@@ -53,9 +55,14 @@ function NewArtwork() {
         title: form.title,
         artist: form.artist || null,
         location: form.location || null,
+        site: form.site || null,
+        room: form.room || null,
+        zone: form.zone || null,
         weight_kg: Number(form.weight_kg),
         wall_type: form.wall_type || null,
         koa_system: form.koa_system || null,
+        fixation_type: form.fixation_type || null,
+        criticality: form.criticality,
         install_date: form.install_date || null,
         notes: form.notes || null,
         photo_url,
@@ -95,13 +102,34 @@ function NewArtwork() {
 
         <Field label="Titre de l'œuvre" value={form.title} onChange={set("title")} required />
         <Field label="Artiste" value={form.artist} onChange={set("artist")} />
-        <Field label="Emplacement" value={form.location} onChange={set("location")} placeholder="Salle, étage, ville…" />
+        <Field label="Emplacement (libre)" value={form.location} onChange={set("location")} placeholder="Salle, étage, ville…" />
+
+        <div className="grid grid-cols-3 gap-4">
+          <Field label="Site" value={form.site} onChange={set("site")} placeholder="Musée X" />
+          <Field label="Salle" value={form.room} onChange={set("room")} placeholder="Salle 12" />
+          <Field label="Zone" value={form.zone} onChange={set("zone")} placeholder="Mur Nord" />
+        </div>
 
         <div className="grid grid-cols-2 gap-4">
           <Field label="Poids (kg)" type="number" step="0.1" value={form.weight_kg} onChange={set("weight_kg")} required />
           <Field label="Type de mur" value={form.wall_type} onChange={set("wall_type")} />
         </div>
         <Field label="Système KOA utilisé" value={form.koa_system} onChange={set("koa_system")} placeholder="Rail, câble, adhésif structural…" />
+        <div className="grid grid-cols-2 gap-4">
+          <Field label="Type de fixation" value={form.fixation_type} onChange={set("fixation_type")} placeholder="Crochet, rail, vis chimique…" />
+          <div>
+            <Label className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground">Criticité</Label>
+            <select
+              value={form.criticality}
+              onChange={(e) => setForm({ ...form, criticality: e.target.value })}
+              className="mt-1 w-full rounded-sm border-0 border-b border-border bg-transparent focus-visible:outline-none focus-visible:border-foreground px-0 h-10 text-sm"
+            >
+              <option value="standard">Standard</option>
+              <option value="elevee">Élevée</option>
+              <option value="critique">Critique</option>
+            </select>
+          </div>
+        </div>
         <Field label="Date d'installation" type="date" value={form.install_date} onChange={set("install_date")} />
 
         <div>

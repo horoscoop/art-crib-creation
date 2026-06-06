@@ -31,12 +31,14 @@ export const listUsersAdmin = createServerFn({ method: "GET" })
     }));
   });
 
+export const ASSIGNABLE_ROLES = ["admin", "expert_koa", "conservateur", "musee", "galerie", "technicien"] as const;
+
 export const setUserRoleAdmin = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) =>
     z.object({
       userId: z.string().uuid(),
-      role: z.enum(["admin", "conservateur"]),
+      role: z.enum(ASSIGNABLE_ROLES),
       grant: z.boolean(),
     }).parse(input),
   )

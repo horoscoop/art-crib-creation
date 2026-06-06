@@ -18,6 +18,7 @@ import { Route as AppScanRouteImport } from './routes/_app.scan'
 import { Route as AppInspectionsRouteImport } from './routes/_app.inspections'
 import { Route as AppGatewaysRouteImport } from './routes/_app.gateways'
 import { Route as AppExpertisesRouteImport } from './routes/_app.expertises'
+import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
 import { Route as AppChatRouteImport } from './routes/_app.chat'
 import { Route as AppAlertsRouteImport } from './routes/_app.alerts'
 import { Route as AppAdminRouteImport } from './routes/_app.admin'
@@ -69,6 +70,11 @@ const AppExpertisesRoute = AppExpertisesRouteImport.update({
   path: '/expertises',
   getParentRoute: () => AppRoute,
 } as any)
+const AppDashboardRoute = AppDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppChatRoute = AppChatRouteImport.update({
   id: '/chat',
   path: '/chat',
@@ -106,6 +112,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AppAdminRoute
   '/alerts': typeof AppAlertsRoute
   '/chat': typeof AppChatRoute
+  '/dashboard': typeof AppDashboardRoute
   '/expertises': typeof AppExpertisesRoute
   '/gateways': typeof AppGatewaysRoute
   '/inspections': typeof AppInspectionsRoute
@@ -121,6 +128,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AppAdminRoute
   '/alerts': typeof AppAlertsRoute
   '/chat': typeof AppChatRoute
+  '/dashboard': typeof AppDashboardRoute
   '/expertises': typeof AppExpertisesRoute
   '/gateways': typeof AppGatewaysRoute
   '/inspections': typeof AppInspectionsRoute
@@ -139,6 +147,7 @@ export interface FileRoutesById {
   '/_app/admin': typeof AppAdminRoute
   '/_app/alerts': typeof AppAlertsRoute
   '/_app/chat': typeof AppChatRoute
+  '/_app/dashboard': typeof AppDashboardRoute
   '/_app/expertises': typeof AppExpertisesRoute
   '/_app/gateways': typeof AppGatewaysRoute
   '/_app/inspections': typeof AppInspectionsRoute
@@ -158,6 +167,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/alerts'
     | '/chat'
+    | '/dashboard'
     | '/expertises'
     | '/gateways'
     | '/inspections'
@@ -173,6 +183,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/alerts'
     | '/chat'
+    | '/dashboard'
     | '/expertises'
     | '/gateways'
     | '/inspections'
@@ -190,6 +201,7 @@ export interface FileRouteTypes {
     | '/_app/admin'
     | '/_app/alerts'
     | '/_app/chat'
+    | '/_app/dashboard'
     | '/_app/expertises'
     | '/_app/gateways'
     | '/_app/inspections'
@@ -274,6 +286,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppExpertisesRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/dashboard': {
+      id: '/_app/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/chat': {
       id: '/_app/chat'
       path: '/chat'
@@ -323,6 +342,7 @@ interface AppRouteChildren {
   AppAdminRoute: typeof AppAdminRoute
   AppAlertsRoute: typeof AppAlertsRoute
   AppChatRoute: typeof AppChatRoute
+  AppDashboardRoute: typeof AppDashboardRoute
   AppExpertisesRoute: typeof AppExpertisesRoute
   AppGatewaysRoute: typeof AppGatewaysRoute
   AppInspectionsRoute: typeof AppInspectionsRoute
@@ -337,6 +357,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAdminRoute: AppAdminRoute,
   AppAlertsRoute: AppAlertsRoute,
   AppChatRoute: AppChatRoute,
+  AppDashboardRoute: AppDashboardRoute,
   AppExpertisesRoute: AppExpertisesRoute,
   AppGatewaysRoute: AppGatewaysRoute,
   AppInspectionsRoute: AppInspectionsRoute,
@@ -358,13 +379,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
