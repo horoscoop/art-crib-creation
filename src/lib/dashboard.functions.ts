@@ -19,7 +19,7 @@ export const getSupervisionDashboard = createServerFn({ method: "GET" })
     const [worksRes, alertsRes, gatewaysRes, readingsRes, eventsRes, inspectionsRes] = await Promise.all([
       supabaseAdmin.from("artworks").select("id, title, criticality, site, room, location, last_check_at, owner_id"),
       supabaseAdmin.from("alerts").select("id, artwork_id, severity, kind, message, created_at, resolved").order("created_at", { ascending: false }).limit(200),
-      supabaseAdmin.from("sensor_gateways").select("id, name, status, last_seen_at"),
+      supabaseAdmin.from("sensor_gateways").select("id, name, status, last_sync_at"),
       supabaseAdmin.from("sensor_readings").select("artwork_id, recorded_at").order("recorded_at", { ascending: false }).limit(500),
       supabaseAdmin.from("trace_events").select("id, artwork_id, event_type, created_at").order("created_at", { ascending: false }).limit(30),
       supabaseAdmin.from("inspections").select("id, artwork_id, next_due_at, performed_at").not("next_due_at", "is", null),
