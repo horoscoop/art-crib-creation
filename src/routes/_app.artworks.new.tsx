@@ -22,7 +22,9 @@ function NewArtwork() {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [form, setForm] = useState({
     title: "", artist: "", location: "",
+    site: "", room: "", zone: "",
     weight_kg: "", wall_type: "Placo", koa_system: "",
+    fixation_type: "", criticality: "standard",
     install_date: "", notes: "",
   });
 
