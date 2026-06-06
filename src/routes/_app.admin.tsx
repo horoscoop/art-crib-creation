@@ -13,10 +13,20 @@ import {
   listConnectionLogsAdmin,
   clearConnectionLogsAdmin,
   listOwnersAdmin,
+  ASSIGNABLE_ROLES,
 } from "@/lib/admin.functions";
 import { exportClientReport } from "@/lib/exports.functions";
 import { createBackup, listBackups, downloadBackup, deleteBackup } from "@/lib/backups.functions";
 import { formatDateTime } from "@/lib/koa-helpers";
+
+const ROLE_LABELS: Record<string, string> = {
+  admin: "Administrateur",
+  expert_koa: "Expert KOA",
+  conservateur: "Conservateur",
+  musee: "Musée",
+  galerie: "Galerie",
+  technicien: "Technicien",
+};
 
 export const Route = createFileRoute("/_app/admin")({
   head: () => ({ meta: [{ title: "Console admin — KOA Guardian" }] }),
