@@ -1,18 +1,26 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, Bell, ScanLine, Shield, Radio, Eye, MessageCircle } from "lucide-react";
+import { Home, Bell, ScanLine, Shield, Radio, Eye, MessageCircle, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useIsAdmin } from "@/lib/use-is-admin";
+import { useRoles } from "@/lib/use-roles";
 
 export function BottomNav() {
   const path = useRouterState({ select: (s) => s.location.pathname });
-  const isAdmin = useIsAdmin();
+  const { isAdmin, isExpert, isAdminOrExpert } = useRoles();
   const items = isAdmin
     ? [
+        { to: "/dashboard", label: "Supervision", icon: LayoutDashboard },
         { to: "/", label: "Œuvres", icon: Home },
         { to: "/alerts", label: "Alertes", icon: Bell },
         { to: "/vision", label: "Vision", icon: Eye },
-        { to: "/gateways", label: "Flux", icon: Radio },
         { to: "/admin", label: "Admin", icon: Shield },
+      ]
+    : isExpert
+    ? [
+        { to: "/dashboard", label: "Supervision", icon: LayoutDashboard },
+        { to: "/", label: "Œuvres", icon: Home },
+        { to: "/alerts", label: "Alertes", icon: Bell },
+        { to: "/vision", label: "Vision", icon: Eye },
+        { to: "/chat", label: "Cimaise", icon: MessageCircle },
       ]
     : [
         { to: "/", label: "Œuvres", icon: Home },
