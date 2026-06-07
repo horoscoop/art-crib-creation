@@ -101,13 +101,24 @@ function LoginPage() {
           Continuer avec Google
         </Button>
 
-        <button
-          type="button"
-          onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-          className="block mx-auto mt-6 text-xs text-muted-foreground underline underline-offset-4"
-        >
-          {mode === "signin" ? "Pas encore de compte ? Créer un accès" : "Déjà un compte ? Se connecter"}
-        </button>
+        <div className="flex flex-col items-center gap-2 mt-6">
+          {mode === "signin" && (
+            <button
+              type="button"
+              onClick={forgot}
+              className="text-xs text-muted-foreground underline underline-offset-4"
+            >
+              Mot de passe oublié ?
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+            className="text-xs text-muted-foreground underline underline-offset-4"
+          >
+            {mode === "signin" ? "Pas encore de compte ? Créer un accès" : "Déjà un compte ? Se connecter"}
+          </button>
+        </div>
       </form>
 
       <p className="mt-auto py-8 text-center text-[10px] tracking-[0.3em] uppercase text-muted-foreground">
