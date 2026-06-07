@@ -44,6 +44,22 @@ function LoginPage() {
     }
   };
 
+  const forgot = async () => {
+    if (!email) { toast.error("Saisissez votre email d'abord"); return; }
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      toast.success("Email de réinitialisation envoyé");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erreur");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const google = async () => {
     setLoading(true);
     const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
