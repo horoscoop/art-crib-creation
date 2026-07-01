@@ -13,7 +13,7 @@ const SignaturesSchema = z.object({
 const SEVERITY_WEIGHTS: Record<string, number> = { ok: 0, mineur: 0.1, modere: 0.3, majeur: 0.6, critique: 1 };
 
 function computeScore(signatures: z.infer<typeof SignaturesSchema>): number {
-  const vals = Object.values(signatures).filter((v): v is string => !!v);
+  const vals = Object.values(signatures).filter((v): v is NonNullable<typeof v> => !!v);
   if (!vals.length) return 0;
   const weights = vals.map((v) => SEVERITY_WEIGHTS[v] ?? 0);
   // Score = average severity (0 = parfait, 1 = critique généralisé),
