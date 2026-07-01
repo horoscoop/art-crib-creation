@@ -1,38 +1,42 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, Bell, ScanLine, Shield, Radio, Eye, MessageCircle, LayoutDashboard } from "lucide-react";
+import { Home, Bell, ScanLine, Shield, Eye, MessageCircle, LayoutDashboard, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRoles } from "@/lib/use-roles";
+import { useActiveAlertsCount } from "@/lib/use-active-alerts";
 
 export function BottomNav() {
   const path = useRouterState({ select: (s) => s.location.pathname });
-  const { isAdmin, isExpert, isAdminOrExpert } = useRoles();
+  const { isAdmin, isExpert } = useRoles();
+  const activeAlerts = useActiveAlertsCount();
+
   const items = isAdmin
     ? [
         { to: "/dashboard", label: "Supervision", icon: LayoutDashboard },
         { to: "/", label: "Œuvres", icon: Home },
-        { to: "/alerts", label: "Alertes", icon: Bell },
-        { to: "/vision", label: "Vision", icon: Eye },
+        { to: "/alerts", label: "Alertes", icon: Bell, badge: activeAlerts },
+        { to: "/compliance", label: "Rapport", icon: FileText },
         { to: "/admin", label: "Admin", icon: Shield },
       ]
     : isExpert
     ? [
         { to: "/dashboard", label: "Supervision", icon: LayoutDashboard },
         { to: "/", label: "Œuvres", icon: Home },
-        { to: "/alerts", label: "Alertes", icon: Bell },
+        { to: "/alerts", label: "Alertes", icon: Bell, badge: activeAlerts },
         { to: "/vision", label: "Vision", icon: Eye },
         { to: "/chat", label: "Cimaise", icon: MessageCircle },
       ]
     : [
         { to: "/", label: "Œuvres", icon: Home },
-        { to: "/alerts", label: "Alertes", icon: Bell },
+        { to: "/alerts", label: "Alertes", icon: Bell, badge: activeAlerts },
         { to: "/vision", label: "Vision", icon: Eye },
         { to: "/scan", label: "Scan", icon: ScanLine },
         { to: "/chat", label: "Cimaise", icon: MessageCircle },
       ];
+
   return (
     <nav className="fixed bottom-0 inset-x-0 z-40 border-t border-border bg-background/95 backdrop-blur">
       <ul className="grid grid-cols-5 max-w-md mx-auto">
-        {items.map(({ to, label, icon: Icon }) => {
+        {items.map(({ to, label, icon: Icon, badge }) => {
           const active = to === "/" ? path === "/" : path.startsWith(to);
           return (
             <li key={to}>
@@ -43,7 +47,14 @@ export function BottomNav() {
                   active ? "text-foreground" : "text-muted-foreground hover:text-foreground",
                 )}
               >
-                <Icon className="size-5" strokeWidth={1.5} />
+                <span className="relative">
+                  <Icon className="size-5" strokeWidth={1.5} />
+                  {badge && badge > 0 ? (
+                    <span className="absolute -top-1.5 -right-2 min-w-4 h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-medium grid place-items-center leading-none">
+                      {badge > 99 ? "99+" : badge}
+                    </span>
+                  ) : null}
+                </span>
                 {label}
               </Link>
             </li>

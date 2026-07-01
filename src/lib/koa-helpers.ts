@@ -15,6 +15,14 @@ export async function signedPhoto(path: string | null | undefined, expiresIn = 3
   return data?.signedUrl ?? null;
 }
 
+/** Batch signed URLs for a gallery. */
+export async function signedPhotos(paths: (string | null | undefined)[], expiresIn = 3600) {
+  const valid = paths.filter((p): p is string => !!p);
+  if (!valid.length) return [];
+  const { data } = await supabase.storage.from("artwork-photos").createSignedUrls(valid, expiresIn);
+  return (data ?? []).map((d) => d.signedUrl).filter(Boolean) as string[];
+}
+
 export function formatDate(d: string | Date | null | undefined) {
   if (!d) return "—";
   const dt = typeof d === "string" ? new Date(d) : d;

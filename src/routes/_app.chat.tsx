@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Send } from "lucide-react";
+import { Send, Trash2 } from "lucide-react";
 import { askCimaise } from "@/lib/cimaise.functions";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -13,14 +13,38 @@ export const Route = createFileRoute("/_app/chat")({
 
 type Msg = { role: "user" | "assistant"; content: string };
 
+const STORAGE_KEY = "koa.cimaise.history.v1";
+const INTRO: Msg = {
+  role: "assistant",
+  content:
+    "Bonjour. Je suis Cimaise, votre assistant technique KOA. Posez-moi vos questions sur l'accrochage, les fixations adhésives, les seuils de charge ou la maintenance préventive.",
+};
+
+function loadHistory(): Msg[] {
+  if (typeof window === "undefined") return [INTRO];
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return [INTRO];
+    const parsed = JSON.parse(raw) as Msg[];
+    return Array.isArray(parsed) && parsed.length ? parsed : [INTRO];
+  } catch {
+    return [INTRO];
+  }
+}
+
 function ChatPage() {
   const ask = useServerFn(askCimaise);
-  const [messages, setMessages] = useState<Msg[]>([
-    { role: "assistant", content: "Bonjour. Je suis Cimaise, votre assistant technique KOA. Posez-moi vos questions sur l'accrochage, les fixations adhésives, les seuils de charge ou la maintenance préventive." },
-  ]);
+  const [messages, setMessages] = useState<Msg[]>([INTRO]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
+
+  // Hydrate from localStorage once mounted (avoids SSR mismatch).
+  useEffect(() => { setMessages(loadHistory()); }, []);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(messages.slice(-50))); } catch {}
+  }, [messages]);
 
   const send = async () => {
     const text = input.trim();
@@ -40,11 +64,24 @@ function ChatPage() {
     }
   };
 
+  const clear = () => {
+    if (!confirm("Effacer l'historique de la conversation ?")) return;
+    setMessages([INTRO]);
+    try { localStorage.removeItem(STORAGE_KEY); } catch {}
+  };
+
   return (
     <main className="max-w-md mx-auto flex flex-col h-[calc(100vh-5rem)]">
-      <header className="px-5 pt-8 pb-4 border-b border-border">
-        <p className="text-[10px] tracking-[0.4em] uppercase text-muted-foreground">Assistant technique</p>
-        <h1 className="serif text-3xl mt-1">Cimaise</h1>
+      <header className="px-5 pt-8 pb-4 border-b border-border flex items-end justify-between">
+        <div>
+          <p className="text-[10px] tracking-[0.4em] uppercase text-muted-foreground">Assistant technique</p>
+          <h1 className="serif text-3xl mt-1">Cimaise</h1>
+        </div>
+        {messages.length > 1 && (
+          <button onClick={clear} title="Effacer" className="text-muted-foreground hover:text-destructive p-2">
+            <Trash2 className="size-4" strokeWidth={1.2} />
+          </button>
+        )}
       </header>
 
       <div className="flex-1 overflow-y-auto px-5 py-6 space-y-5">

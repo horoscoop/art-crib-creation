@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bell, CheckCircle2 } from "lucide-react";
+import { useEffect } from "react";
+import { Bell, CheckCircle2, Radio } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDateTime } from "@/lib/koa-helpers";
 
@@ -24,20 +25,37 @@ function AlertsPage() {
     },
   });
 
+  // Realtime subscription on the alerts table
+  useEffect(() => {
+    const channel = supabase
+      .channel("alerts-page-live")
+      .on("postgres_changes", { event: "*", schema: "public", table: "alerts" }, () => {
+        qc.invalidateQueries({ queryKey: ["alerts-all"] });
+        qc.invalidateQueries({ queryKey: ["alerts-active-count"] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [qc]);
+
   const active = alerts.filter((a) => !a.resolved);
   const resolved = alerts.filter((a) => a.resolved);
 
   const resolve = async (id: string) => {
     await supabase.from("alerts").update({ resolved: true, resolved_at: new Date().toISOString() }).eq("id", id);
     qc.invalidateQueries({ queryKey: ["alerts-all"] });
-    qc.invalidateQueries({ queryKey: ["alerts-active"] });
+    qc.invalidateQueries({ queryKey: ["alerts-active-count"] });
   };
 
   return (
     <main className="max-w-md mx-auto px-5 pt-10">
-      <header>
-        <p className="text-[10px] tracking-[0.4em] uppercase text-muted-foreground">Monitoring</p>
-        <h1 className="serif text-4xl mt-1">Alertes</h1>
+      <header className="flex items-start justify-between">
+        <div>
+          <p className="text-[10px] tracking-[0.4em] uppercase text-muted-foreground">Monitoring</p>
+          <h1 className="serif text-4xl mt-1">Alertes</h1>
+        </div>
+        <span className="mt-2 inline-flex items-center gap-1.5 text-[10px] tracking-widest uppercase text-muted-foreground">
+          <Radio className="size-3 animate-pulse text-ok" /> Temps réel
+        </span>
       </header>
 
       <section className="mt-8">
