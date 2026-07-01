@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { Eye, Upload, Loader2, Link2, FileDown, ShieldCheck, AlertTriangle } from "lucide-react";
@@ -36,6 +36,14 @@ function scoreColor(score: number) {
   return "text-red-600 border-red-600";
 }
 
+const LOADER_MESSAGES = [
+  "Analyse du support mural…",
+  "Estimation de la charge et coefficient ×4…",
+  "Vérification des risques (humidité, vibrations)…",
+  "Sélection du kit KOA le plus adapté…",
+  "Génération du rapport technique…",
+];
+
 function VisionPage() {
   const run = useServerFn(analyzeKoaVision);
   const { user } = useAuth();
@@ -44,8 +52,15 @@ function VisionPage() {
   const [ctx, setCtx] = useState({ weight_kg: "", height_m: "", age_years: "", location: "", notes: "" });
   const [artworkId, setArtworkId] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const [loaderStep, setLoaderStep] = useState(0);
   const [saving, setSaving] = useState(false);
   const [report, setReport] = useState<VisionReport | null>(null);
+
+  useEffect(() => {
+    if (!loading) { setLoaderStep(0); return; }
+    const id = setInterval(() => setLoaderStep((s) => (s + 1) % LOADER_MESSAGES.length), 2200);
+    return () => clearInterval(id);
+  }, [loading]);
 
   const { data: artworks = [] } = useQuery({
     queryKey: ["artworks-mine", user?.id],
@@ -281,7 +296,7 @@ function VisionPage() {
       </section>
 
       <Button onClick={submit} disabled={loading} className="mt-6 w-full">
-        {loading ? <><Loader2 className="size-4 mr-2 animate-spin" /> Analyse en cours…</> : "Lancer l'analyse"}
+        {loading ? <><Loader2 className="size-4 mr-2 animate-spin" /> {LOADER_MESSAGES[loaderStep]}</> : "Lancer l'analyse"}
       </Button>
 
       {report && (
