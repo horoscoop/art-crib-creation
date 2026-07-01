@@ -56,6 +56,13 @@ export type Database = {
             foreignKeyName: "alerts_artwork_id_fkey"
             columns: ["artwork_id"]
             isOneToOne: false
+            referencedRelation: "artwork_inspection_status"
+            referencedColumns: ["artwork_id"]
+          },
+          {
+            foreignKeyName: "alerts_artwork_id_fkey"
+            columns: ["artwork_id"]
+            isOneToOne: false
             referencedRelation: "artworks"
             referencedColumns: ["id"]
           },
@@ -81,6 +88,7 @@ export type Database = {
           notes: string | null
           owner_id: string
           photo_url: string | null
+          photo_urls: string[]
           room: string | null
           site: string | null
           title: string
@@ -108,6 +116,7 @@ export type Database = {
           notes?: string | null
           owner_id: string
           photo_url?: string | null
+          photo_urls?: string[]
           room?: string | null
           site?: string | null
           title: string
@@ -135,6 +144,7 @@ export type Database = {
           notes?: string | null
           owner_id?: string
           photo_url?: string | null
+          photo_urls?: string[]
           room?: string | null
           site?: string | null
           title?: string
@@ -185,6 +195,13 @@ export type Database = {
           uploaded_by?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "attachments_artwork_id_fkey"
+            columns: ["artwork_id"]
+            isOneToOne: false
+            referencedRelation: "artwork_inspection_status"
+            referencedColumns: ["artwork_id"]
+          },
           {
             foreignKeyName: "attachments_artwork_id_fkey"
             columns: ["artwork_id"]
@@ -320,6 +337,13 @@ export type Database = {
             foreignKeyName: "gateway_artwork_map_artwork_id_fkey"
             columns: ["artwork_id"]
             isOneToOne: false
+            referencedRelation: "artwork_inspection_status"
+            referencedColumns: ["artwork_id"]
+          },
+          {
+            foreignKeyName: "gateway_artwork_map_artwork_id_fkey"
+            columns: ["artwork_id"]
+            isOneToOne: false
             referencedRelation: "artworks"
             referencedColumns: ["id"]
           },
@@ -443,10 +467,47 @@ export type Database = {
             foreignKeyName: "maintenance_logs_artwork_id_fkey"
             columns: ["artwork_id"]
             isOneToOne: false
+            referencedRelation: "artwork_inspection_status"
+            referencedColumns: ["artwork_id"]
+          },
+          {
+            foreignKeyName: "maintenance_logs_artwork_id_fkey"
+            columns: ["artwork_id"]
+            isOneToOne: false
             referencedRelation: "artworks"
             referencedColumns: ["id"]
           },
         ]
+      }
+      notification_preferences: {
+        Row: {
+          created_at: string
+          email_alerts_enabled: boolean
+          email_alerts_severity: string
+          id: string
+          notify_email: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email_alerts_enabled?: boolean
+          email_alerts_severity?: string
+          id?: string
+          notify_email?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email_alerts_enabled?: boolean
+          email_alerts_severity?: string
+          id?: string
+          notify_email?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -471,6 +532,45 @@ export type Database = {
           role?: string
         }
         Relationships: []
+      }
+      reminder_logs: {
+        Row: {
+          artwork_id: string
+          id: string
+          reminder_type: string
+          sent_at: string
+          sent_to: string
+        }
+        Insert: {
+          artwork_id: string
+          id?: string
+          reminder_type: string
+          sent_at?: string
+          sent_to: string
+        }
+        Update: {
+          artwork_id?: string
+          id?: string
+          reminder_type?: string
+          sent_at?: string
+          sent_to?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reminder_logs_artwork_id_fkey"
+            columns: ["artwork_id"]
+            isOneToOne: false
+            referencedRelation: "artwork_inspection_status"
+            referencedColumns: ["artwork_id"]
+          },
+          {
+            foreignKeyName: "reminder_logs_artwork_id_fkey"
+            columns: ["artwork_id"]
+            isOneToOne: false
+            referencedRelation: "artworks"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sensor_gateways: {
         Row: {
@@ -556,6 +656,13 @@ export type Database = {
             foreignKeyName: "sensor_readings_artwork_id_fkey"
             columns: ["artwork_id"]
             isOneToOne: false
+            referencedRelation: "artwork_inspection_status"
+            referencedColumns: ["artwork_id"]
+          },
+          {
+            foreignKeyName: "sensor_readings_artwork_id_fkey"
+            columns: ["artwork_id"]
+            isOneToOne: false
             referencedRelation: "artworks"
             referencedColumns: ["id"]
           },
@@ -600,6 +707,13 @@ export type Database = {
             foreignKeyName: "trace_events_artwork_id_fkey"
             columns: ["artwork_id"]
             isOneToOne: false
+            referencedRelation: "artwork_inspection_status"
+            referencedColumns: ["artwork_id"]
+          },
+          {
+            foreignKeyName: "trace_events_artwork_id_fkey"
+            columns: ["artwork_id"]
+            isOneToOne: false
             referencedRelation: "artworks"
             referencedColumns: ["id"]
           },
@@ -628,7 +742,23 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      artwork_inspection_status: {
+        Row: {
+          artwork_id: string | null
+          criticality: string | null
+          inspection_status: string | null
+          last_inspection_at: string | null
+          last_period_type: string | null
+          last_score: number | null
+          location: string | null
+          next_due_at: string | null
+          owner_id: string | null
+          room: string | null
+          site: string | null
+          title: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       get_trace_passport: { Args: { _nfc_id: string }; Returns: Json }

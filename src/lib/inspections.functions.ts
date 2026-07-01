@@ -13,10 +13,14 @@ const SignaturesSchema = z.object({
 const SEVERITY_WEIGHTS: Record<string, number> = { ok: 0, mineur: 0.1, modere: 0.3, majeur: 0.6, critique: 1 };
 
 function computeScore(signatures: z.infer<typeof SignaturesSchema>): number {
-  const vals = Object.values(signatures);
+  const vals = Object.values(signatures).filter((v): v is NonNullable<typeof v> => !!v);
   if (!vals.length) return 0;
-  const sum = vals.reduce((acc, v) => acc + (v ? SEVERITY_WEIGHTS[v] ?? 0 : 0), 0);
-  return Math.min(1, sum / vals.length * vals.length); // sum normalized so any "critique" pushes >=0.2 etc.
+  const weights = vals.map((v) => SEVERITY_WEIGHTS[v] ?? 0);
+  // Score = average severity (0 = parfait, 1 = critique généralisé),
+  // relevé au max de la pire signature pour éviter qu'un critique unique soit dilué.
+  const avg = weights.reduce((a, b) => a + b, 0) / weights.length;
+  const worst = Math.max(...weights);
+  return Math.min(1, Math.max(avg, worst * 0.6));
 }
 
 export const createInspection = createServerFn({ method: "POST" })
