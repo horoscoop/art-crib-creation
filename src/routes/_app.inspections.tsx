@@ -79,7 +79,7 @@ function toCsv(rows: InspectionRow[]) {
 
 function InspectionsPage() {
   const list = useServerFn(listAllInspections);
-  const { data: rows = [] } = useQuery<InspectionRow[]>({ queryKey: ["inspections-all"], queryFn: () => list() as Promise<InspectionRow[]> });
+  const { data: rows = [] } = useQuery<InspectionRow[]>({ queryKey: ["inspections-all"], queryFn: () => list() as unknown as Promise<InspectionRow[]> });
 
   const { data: planning = [] } = useQuery<PlanningRow[]>({
     queryKey: ["inspection-planning"],
