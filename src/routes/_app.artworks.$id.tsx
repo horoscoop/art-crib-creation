@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { StatusBadge } from "@/components/koa/status-badge";
-import { computeSeverity, signedPhoto, formatDate, formatDateTime } from "@/lib/koa-helpers";
+import { computeSeverity, signedPhoto, signedPhotos, formatDate, formatDateTime } from "@/lib/koa-helpers";
 import { toast } from "sonner";
 import { NewInspectionDialog } from "@/routes/_app.inspections";
 import { NewExpertiseDialog } from "@/routes/_app.expertises";
@@ -27,7 +27,8 @@ function ArtworkDetail() {
   const { id } = Route.useParams();
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const [photo, setPhoto] = useState<string | null>(null);
+  const [photos, setPhotos] = useState<string[]>([]);
+  const [activePhoto, setActivePhoto] = useState(0);
 
   const { data: artwork } = useQuery({
     queryKey: ["artwork", id],
@@ -69,8 +70,13 @@ function ArtworkDetail() {
   });
 
   useEffect(() => {
-    if (artwork?.photo_url) signedPhoto(artwork.photo_url).then(setPhoto);
-  }, [artwork?.photo_url]);
+    if (!artwork) return;
+    const list: (string | null | undefined)[] = artwork.photo_urls?.length
+      ? artwork.photo_urls
+      : artwork.photo_url ? [artwork.photo_url] : [];
+    if (!list.length) { setPhotos([]); return; }
+    signedPhotos(list).then((urls) => { setPhotos(urls); setActivePhoto(0); });
+  }, [artwork?.photo_url, artwork?.photo_urls]);
 
   if (!artwork) return <div className="p-8 text-center text-muted-foreground text-xs">…</div>;
 
@@ -103,9 +109,36 @@ function ArtworkDetail() {
         </button>
       </div>
 
-      {photo && (
-        <div className="aspect-[4/3] mt-4 bg-secondary overflow-hidden">
-          <img src={photo} alt={artwork.title} className="size-full object-cover" />
+      {photos.length > 0 && (
+        <div className="mt-4">
+          <div className="aspect-[4/3] bg-secondary overflow-hidden relative">
+            <img src={photos[activePhoto]} alt={artwork.title} className="size-full object-cover" />
+            {photos.length > 1 && (
+              <>
+                <button
+                  onClick={() => setActivePhoto((p) => (p - 1 + photos.length) % photos.length)}
+                  className="absolute top-1/2 -translate-y-1/2 left-2 size-8 grid place-items-center bg-background/85 text-foreground hover:bg-background"
+                  aria-label="Photo précédente">‹</button>
+                <button
+                  onClick={() => setActivePhoto((p) => (p + 1) % photos.length)}
+                  className="absolute top-1/2 -translate-y-1/2 right-2 size-8 grid place-items-center bg-background/85 text-foreground hover:bg-background"
+                  aria-label="Photo suivante">›</button>
+                <span className="absolute bottom-2 right-2 text-[10px] mono bg-background/85 px-2 py-0.5">
+                  {activePhoto + 1}/{photos.length}
+                </span>
+              </>
+            )}
+          </div>
+          {photos.length > 1 && (
+            <div className="mt-2 px-5 flex gap-2 overflow-x-auto">
+              {photos.map((p, i) => (
+                <button key={i} onClick={() => setActivePhoto(i)}
+                  className={`shrink-0 size-14 overflow-hidden border-2 ${i === activePhoto ? "border-foreground" : "border-transparent opacity-60 hover:opacity-100"}`}>
+                  <img src={p} alt="" className="size-full object-cover" />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
