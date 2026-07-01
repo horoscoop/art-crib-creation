@@ -20,6 +20,7 @@ import { Route as AppInspectionsRouteImport } from './routes/_app.inspections'
 import { Route as AppGatewaysRouteImport } from './routes/_app.gateways'
 import { Route as AppExpertisesRouteImport } from './routes/_app.expertises'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
+import { Route as AppComplianceRouteImport } from './routes/_app.compliance'
 import { Route as AppChatRouteImport } from './routes/_app.chat'
 import { Route as AppAlertsRouteImport } from './routes/_app.alerts'
 import { Route as AppAdminRouteImport } from './routes/_app.admin'
@@ -81,6 +82,11 @@ const AppDashboardRoute = AppDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AppRoute,
 } as any)
+const AppComplianceRoute = AppComplianceRouteImport.update({
+  id: '/compliance',
+  path: '/compliance',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppChatRoute = AppChatRouteImport.update({
   id: '/chat',
   path: '/chat',
@@ -119,6 +125,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AppAdminRoute
   '/alerts': typeof AppAlertsRoute
   '/chat': typeof AppChatRoute
+  '/compliance': typeof AppComplianceRoute
   '/dashboard': typeof AppDashboardRoute
   '/expertises': typeof AppExpertisesRoute
   '/gateways': typeof AppGatewaysRoute
@@ -136,6 +143,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AppAdminRoute
   '/alerts': typeof AppAlertsRoute
   '/chat': typeof AppChatRoute
+  '/compliance': typeof AppComplianceRoute
   '/dashboard': typeof AppDashboardRoute
   '/expertises': typeof AppExpertisesRoute
   '/gateways': typeof AppGatewaysRoute
@@ -156,6 +164,7 @@ export interface FileRoutesById {
   '/_app/admin': typeof AppAdminRoute
   '/_app/alerts': typeof AppAlertsRoute
   '/_app/chat': typeof AppChatRoute
+  '/_app/compliance': typeof AppComplianceRoute
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/expertises': typeof AppExpertisesRoute
   '/_app/gateways': typeof AppGatewaysRoute
@@ -177,6 +186,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/alerts'
     | '/chat'
+    | '/compliance'
     | '/dashboard'
     | '/expertises'
     | '/gateways'
@@ -194,6 +204,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/alerts'
     | '/chat'
+    | '/compliance'
     | '/dashboard'
     | '/expertises'
     | '/gateways'
@@ -213,6 +224,7 @@ export interface FileRouteTypes {
     | '/_app/admin'
     | '/_app/alerts'
     | '/_app/chat'
+    | '/_app/compliance'
     | '/_app/dashboard'
     | '/_app/expertises'
     | '/_app/gateways'
@@ -313,6 +325,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDashboardRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/compliance': {
+      id: '/_app/compliance'
+      path: '/compliance'
+      fullPath: '/compliance'
+      preLoaderRoute: typeof AppComplianceRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/chat': {
       id: '/_app/chat'
       path: '/chat'
@@ -362,6 +381,7 @@ interface AppRouteChildren {
   AppAdminRoute: typeof AppAdminRoute
   AppAlertsRoute: typeof AppAlertsRoute
   AppChatRoute: typeof AppChatRoute
+  AppComplianceRoute: typeof AppComplianceRoute
   AppDashboardRoute: typeof AppDashboardRoute
   AppExpertisesRoute: typeof AppExpertisesRoute
   AppGatewaysRoute: typeof AppGatewaysRoute
@@ -377,6 +397,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAdminRoute: AppAdminRoute,
   AppAlertsRoute: AppAlertsRoute,
   AppChatRoute: AppChatRoute,
+  AppComplianceRoute: AppComplianceRoute,
   AppDashboardRoute: AppDashboardRoute,
   AppExpertisesRoute: AppExpertisesRoute,
   AppGatewaysRoute: AppGatewaysRoute,
