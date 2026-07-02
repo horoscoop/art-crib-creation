@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.auto_approve_privileged() FROM PUBLIC, anon, authenticated;
