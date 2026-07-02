@@ -2,10 +2,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { ChevronLeft, Plus, Trash2, Radio } from "lucide-react";
+import { ChevronLeft, Plus, Trash2, Radio, Eye, EyeOff, Copy, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { useIsAdmin } from "@/lib/use-is-admin";
-import { listGateways, upsertGateway, deleteGateway } from "@/lib/gateways.functions";
+import { listGateways, upsertGateway, deleteGateway, regenerateGatewayToken } from "@/lib/gateways.functions";
 
 export const Route = createFileRoute("/_app/gateways")({
   head: () => ({ meta: [{ title: "Passerelles capteurs — KOA Guardian" }] }),
@@ -17,6 +17,7 @@ function GatewaysPage() {
   const list = useServerFn(listGateways);
   const save = useServerFn(upsertGateway);
   const del = useServerFn(deleteGateway);
+  const regenerate = useServerFn(regenerateGatewayToken);
   const qc = useQueryClient();
   const [editing, setEditing] = useState<any | null>(null);
 
@@ -51,43 +52,22 @@ function GatewaysPage() {
           </li>
         )}
         {gateways.map((g: any) => (
-          <li key={g.id} className="border border-border bg-card p-4">
-            <div className="flex items-start justify-between">
-              <div>
-                <div className="flex items-center gap-2">
-                  <Radio className="size-3.5 text-muted-foreground" />
-                  <h3 className="serif text-lg">{g.name}</h3>
-                  <span className="text-[10px] uppercase tracking-widest px-2 border border-border text-muted-foreground">{g.protocol}</span>
-                </div>
-                <p className="text-xs text-muted-foreground mt-1 mono break-all">{g.endpoint || "—"}</p>
-              </div>
-              <div className="flex items-center gap-3">
-                <button onClick={() => setEditing(g)} className="text-[10px] uppercase tracking-widest underline">Modifier</button>
-                <button onClick={async () => { if (confirm("Supprimer ?")) { await del({ data: { id: g.id } }); refresh(); } }}
-                  className="text-muted-foreground hover:text-destructive">
-                  <Trash2 className="size-4" />
-                </button>
-              </div>
-            </div>
-            <div className="mt-3 pt-3 border-t border-border text-xs grid grid-cols-2 gap-3">
-              <div>
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Jeton</p>
-                <code className="mono text-[10px] break-all">{g.auth_token}</code>
-              </div>
-              <div>
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Intervalle de sync</p>
-                <p className="mono">{g.sync_interval_s}s</p>
-              </div>
-            </div>
-            <details className="mt-3 text-xs">
-              <summary className="cursor-pointer text-[10px] uppercase tracking-widest text-muted-foreground">Endpoint d'ingestion</summary>
-              <code className="mono text-[10px] break-all block mt-2 p-2 bg-secondary">
-                POST /api/public/sensors/ingest{"\n"}
-                Headers: X-Gateway-Token: {g.auth_token}{"\n"}
-                Body: {`{"artwork_id":"<uuid>", ...vos champs (mapping appliqué)}`}
-              </code>
-            </details>
-          </li>
+          <GatewayCard
+            key={g.id}
+            gateway={g}
+            onEdit={() => setEditing(g)}
+            onDelete={async () => {
+              if (!confirm("Supprimer ?")) return;
+              await del({ data: { id: g.id } });
+              refresh();
+            }}
+            onRegenerate={async () => {
+              if (!confirm("Régénérer le jeton ? L'ancien jeton cessera immédiatement de fonctionner — pensez à mettre à jour vos capteurs.")) return;
+              await regenerate({ data: { id: g.id } });
+              toast.success("Jeton régénéré");
+              refresh();
+            }}
+          />
         ))}
       </ul>
 
@@ -104,6 +84,76 @@ function GatewaysPage() {
         />
       )}
     </main>
+  );
+}
+
+function GatewayCard({ gateway: g, onEdit, onDelete, onRegenerate }: {
+  gateway: any;
+  onEdit: () => void;
+  onDelete: () => void;
+  onRegenerate: () => void;
+}) {
+  const [revealed, setRevealed] = useState(false);
+  const masked = "•".repeat(8) + g.auth_token.slice(-4);
+  const shown = revealed ? g.auth_token : masked;
+
+  const copyToken = async () => {
+    try {
+      await navigator.clipboard.writeText(g.auth_token);
+      toast.success("Jeton copié");
+    } catch {
+      toast.error("Impossible de copier automatiquement — sélectionnez le texte manuellement");
+    }
+  };
+
+  return (
+    <li className="border border-border bg-card p-4">
+      <div className="flex items-start justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <Radio className="size-3.5 text-muted-foreground" />
+            <h3 className="serif text-lg">{g.name}</h3>
+            <span className="text-[10px] uppercase tracking-widest px-2 border border-border text-muted-foreground">{g.protocol}</span>
+          </div>
+          <p className="text-xs text-muted-foreground mt-1 mono break-all">{g.endpoint || "—"}</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <button onClick={onEdit} className="text-[10px] uppercase tracking-widest underline">Modifier</button>
+          <button onClick={onDelete} className="text-muted-foreground hover:text-destructive">
+            <Trash2 className="size-4" />
+          </button>
+        </div>
+      </div>
+      <div className="mt-3 pt-3 border-t border-border text-xs grid grid-cols-2 gap-3">
+        <div>
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Jeton</p>
+          <div className="flex items-center gap-2 mt-0.5">
+            <code className="mono text-[10px] break-all">{shown}</code>
+            <button onClick={() => setRevealed((r) => !r)} className="text-muted-foreground hover:text-foreground shrink-0" title={revealed ? "Masquer" : "Afficher"}>
+              {revealed ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+            </button>
+            <button onClick={copyToken} className="text-muted-foreground hover:text-foreground shrink-0" title="Copier">
+              <Copy className="size-3.5" />
+            </button>
+            <button onClick={onRegenerate} className="text-muted-foreground hover:text-destructive shrink-0" title="Régénérer">
+              <RefreshCw className="size-3.5" />
+            </button>
+          </div>
+        </div>
+        <div>
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Intervalle de sync</p>
+          <p className="mono">{g.sync_interval_s}s</p>
+        </div>
+      </div>
+      <details className="mt-3 text-xs">
+        <summary className="cursor-pointer text-[10px] uppercase tracking-widest text-muted-foreground">Endpoint d'ingestion</summary>
+        <code className="mono text-[10px] break-all block mt-2 p-2 bg-secondary">
+          POST /api/public/sensors/ingest{"\n"}
+          Headers: X-Gateway-Token: {shown}{"\n"}
+          Body: {`{"artwork_id":"<uuid>", ...vos champs (mapping appliqué)}`}
+        </code>
+      </details>
+    </li>
   );
 }
 

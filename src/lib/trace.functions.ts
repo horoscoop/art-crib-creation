@@ -197,24 +197,43 @@ export const getTracePassport = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
     if (!passport) return null;
 
-    // Verify chain integrity server-side
     const events = (passport as { events: Array<{ seq: number; event_type: string; payload: unknown; prev_hash: string | null; hash: string; created_at: string }> }).events ?? [];
+
+    // The hash chain was computed at insertion time using the artwork's
+    // internal UUID (never exposed to the public passport). To actually
+    // verify the hashes -- not just that prev_hash links up -- we resolve
+    // that internal id server-side only, recompute each hash, and compare.
+    // artwork_id itself is never returned to the caller.
     let chain_ok = true;
-    let prev: string | null = null;
-    for (const e of events) {
-      if (e.prev_hash !== prev) { chain_ok = false; break; }
-      const expected = computeHash({
-        artwork_id: (passport as { nfc_id: string }).nfc_id, // not used in passport, but seq+payload+prev+created_at suffice
-        seq: e.seq,
-        event_type: e.event_type,
-        payload: e.payload,
-        prev_hash: e.prev_hash,
-        created_at: e.created_at,
-      });
-      // Note: hash was computed with real artwork_id, but get_trace_passport doesn't expose it
-      // so we just verify chain linkage (prev_hash matches). Full verification would expose artwork_id.
-      void expected;
-      prev = e.hash;
+    if (events.length > 0) {
+      const { data: artwork } = await supabaseAdmin
+        .from("artworks")
+        .select("id")
+        .eq("nfc_id", data.nfc_id)
+        .maybeSingle();
+
+      if (!artwork) {
+        chain_ok = false;
+      } else {
+        let prev: string | null = null;
+        for (const e of events) {
+          if (e.prev_hash !== prev) { chain_ok = false; break; }
+          const expected = computeHash({
+            artwork_id: artwork.id,
+            seq: e.seq,
+            event_type: e.event_type,
+            payload: e.payload,
+            prev_hash: e.prev_hash,
+            // Postgres re-serializes timestamptz differently from JS's
+            // toISOString() (e.g. "+00:00" vs "Z", microsecond padding).
+            // Round-trip through Date to get back the exact string format
+            // that was embedded in the hash at insertion time.
+            created_at: new Date(e.created_at).toISOString(),
+          });
+          if (expected !== e.hash) { chain_ok = false; break; }
+          prev = e.hash;
+        }
+      }
     }
 
     return { ...(passport as object), chain_ok };
