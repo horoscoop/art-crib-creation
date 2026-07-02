@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useState, Fragment } from "react";
 import {
   ChevronLeft, Users, LayoutGrid, Activity, Radio, Download, Database,
   Award, Eye, MessageCircle, Check, X, Trash2, ClipboardList, FileText,
@@ -432,8 +432,8 @@ function VisionTab() {
         </thead>
         <tbody className="divide-y divide-border">
           {rows.map((r: any) => (
-            <>
-              <tr key={r.id}>
+            <Fragment key={r.id}>
+              <tr>
                 <td className="py-2 mono text-xs">{formatDateTime(r.created_at)}</td>
                 <td className="mono text-xs">{r.user_email || "—"}</td>
                 <td className="text-xs">{r.mode === "recommendation" ? "Reco" : "Diag"}</td>
@@ -447,7 +447,7 @@ function VisionTab() {
                 </td>
               </tr>
               {open === r.id && (
-                <tr key={r.id + "-d"}><td colSpan={6} className="pb-4">
+                <tr><td colSpan={6} className="pb-4">
                   <div className="rounded-sm border border-border p-3 text-xs">
                     {!detail && <p className="text-muted-foreground">Chargement…</p>}
                     {detail && (
@@ -463,7 +463,7 @@ function VisionTab() {
                   </div>
                 </td></tr>
               )}
-            </>
+            </Fragment>
           ))}
           {rows.length === 0 && <tr><td colSpan={6} className="py-8 text-center text-sm text-muted-foreground">Aucun diagnostic archivé.</td></tr>}
         </tbody>
@@ -513,8 +513,8 @@ function CimaiseTab() {
         </thead>
         <tbody className="divide-y divide-border">
           {(data?.per_user ?? []).map((u: any) => (
-            <>
-              <tr key={u.user_id}>
+            <Fragment key={u.user_id}>
+              <tr>
                 <td className="py-2 mono text-xs">{u.email || u.user_id}</td>
                 <td className="text-right mono text-xs">{u.questions}</td>
                 <td className="text-right mono text-xs">{formatDateTime(u.last_at)}</td>
@@ -528,7 +528,7 @@ function CimaiseTab() {
                 </td>
               </tr>
               {openUser === u.user_id && (
-                <tr key={u.user_id + "-h"}><td colSpan={4} className="pb-4">
+                <tr><td colSpan={4} className="pb-4">
                   <div className="rounded-sm border border-border p-3 space-y-3 max-h-96 overflow-y-auto">
                     {messages.length === 0 && <p className="text-xs text-muted-foreground">Aucun message.</p>}
                     {messages.map((m) => (
@@ -542,7 +542,7 @@ function CimaiseTab() {
                   </div>
                 </td></tr>
               )}
-            </>
+            </Fragment>
           ))}
           {(!data || data.per_user.length === 0) && (
             <tr><td colSpan={4} className="py-8 text-center text-sm text-muted-foreground">Aucune conversation Cimaise enregistrée.</td></tr>
