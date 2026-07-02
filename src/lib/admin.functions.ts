@@ -19,16 +19,20 @@ export const listUsersAdmin = createServerFn({ method: "GET" })
     await assertAdmin(context.userId);
     const { data: profiles } = await supabaseAdmin
       .from("profiles")
-      .select("id, full_name, organization, role, created_at")
+      .select("id, full_name, organization, role, approved, created_at")
       .order("created_at", { ascending: false });
     const { data: roles } = await supabaseAdmin.from("user_roles").select("user_id, role");
     const { data: usersRes } = await supabaseAdmin.auth.admin.listUsers({ perPage: 200 });
-    const emailById = new Map(usersRes.users.map((u) => [u.id, u.email ?? ""]));
-    return (profiles ?? []).map((p) => ({
-      ...p,
-      email: emailById.get(p.id) ?? "",
-      roles: (roles ?? []).filter((r) => r.user_id === p.id).map((r) => r.role),
-    }));
+    const userById = new Map(usersRes.users.map((u) => [u.id, u]));
+    return (profiles ?? []).map((p) => {
+      const u = userById.get(p.id);
+      return {
+        ...p,
+        email: u?.email ?? "",
+        last_sign_in_at: u?.last_sign_in_at ?? null,
+        roles: (roles ?? []).filter((r) => r.user_id === p.id).map((r) => r.role),
+      };
+    });
   });
 
 export const ASSIGNABLE_ROLES = ["admin", "expert_koa", "conservateur", "musee", "galerie", "technicien"] as const;
@@ -49,6 +53,27 @@ export const setUserRoleAdmin = createServerFn({ method: "POST" })
     } else {
       await supabaseAdmin.from("user_roles").delete().eq("user_id", data.userId).eq("role", data.role);
     }
+    return { ok: true };
+  });
+
+export const setUserApprovedAdmin = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) => z.object({ userId: z.string().uuid(), approved: z.boolean() }).parse(i))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const { error } = await supabaseAdmin.from("profiles").update({ approved: data.approved }).eq("id", data.userId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const deleteUserAdmin = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) => z.object({ userId: z.string().uuid() }).parse(i))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    if (data.userId === context.userId) throw new Error("Impossible de supprimer son propre compte.");
+    const { error } = await supabaseAdmin.auth.admin.deleteUser(data.userId);
+    if (error) throw new Error(error.message);
     return { ok: true };
   });
 
@@ -118,3 +143,138 @@ export const clearConnectionLogsAdmin = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+// Insère un événement de connexion coté serveur (fallback fiable, RLS bypass).
+export const logConnectionEventAdmin = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) => z.object({
+    event: z.string().max(40),
+    user_agent: z.string().max(500).optional().nullable(),
+  }).parse(i))
+  .handler(async ({ data, context }) => {
+    const email = context.claims?.email ?? null;
+    await supabaseAdmin.from("connection_logs").insert({
+      user_id: context.userId,
+      email,
+      event: data.event,
+      user_agent: data.user_agent ?? null,
+    });
+    return { ok: true };
+  });
+
+// ========== Expertises ==========
+export const listExpertisesAdmin = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.userId);
+    const { data } = await supabaseAdmin
+      .from("expertises")
+      .select("*, artworks(title, location, owner_id)")
+      .order("performed_at", { ascending: false })
+      .limit(500);
+    const { data: usersRes } = await supabaseAdmin.auth.admin.listUsers({ perPage: 200 });
+    const emailById = new Map(usersRes.users.map((u) => [u.id, u.email ?? ""]));
+    return (data ?? []).map((e: any) => ({
+      ...e,
+      expert_email: emailById.get(e.expert_id) ?? "",
+      owner_email: emailById.get(e.artworks?.owner_id) ?? "",
+    }));
+  });
+
+export const deleteExpertiseAdmin = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) => z.object({ id: z.string().uuid() }).parse(i))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const { error } = await supabaseAdmin.from("expertises").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+// ========== KOA Vision diagnostics ==========
+export const listVisionDiagnosticsAdmin = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.userId);
+    const { data } = await supabaseAdmin
+      .from("vision_diagnostics")
+      .select("id, user_id, artwork_id, mode, scoring_securite, kit_recommande, created_at")
+      .order("created_at", { ascending: false })
+      .limit(500);
+    const { data: usersRes } = await supabaseAdmin.auth.admin.listUsers({ perPage: 200 });
+    const emailById = new Map(usersRes.users.map((u) => [u.id, u.email ?? ""]));
+    return (data ?? []).map((d: any) => ({ ...d, user_email: emailById.get(d.user_id) ?? "" }));
+  });
+
+export const getVisionDiagnosticAdmin = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) => z.object({ id: z.string().uuid() }).parse(i))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const { data: row, error } = await supabaseAdmin
+      .from("vision_diagnostics").select("*").eq("id", data.id).maybeSingle();
+    if (error || !row) throw new Error("Diagnostic introuvable");
+    return row;
+  });
+
+export const deleteVisionDiagnosticAdmin = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) => z.object({ id: z.string().uuid() }).parse(i))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const { error } = await supabaseAdmin.from("vision_diagnostics").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+// ========== Cimaise conversations ==========
+export const cimaiseStatsAdmin = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.userId);
+    const { data } = await supabaseAdmin
+      .from("cimaise_messages")
+      .select("user_id, role, created_at")
+      .order("created_at", { ascending: false })
+      .limit(5000);
+    const { data: usersRes } = await supabaseAdmin.auth.admin.listUsers({ perPage: 200 });
+    const emailById = new Map(usersRes.users.map((u) => [u.id, u.email ?? ""]));
+    const perUser = new Map<string, { user_id: string; email: string; questions: number; answers: number; last_at: string }>();
+    for (const row of data ?? []) {
+      const key = row.user_id;
+      const cur = perUser.get(key) ?? { user_id: key, email: emailById.get(key) ?? "", questions: 0, answers: 0, last_at: row.created_at };
+      if (row.role === "user") cur.questions++;
+      else cur.answers++;
+      if (row.created_at > cur.last_at) cur.last_at = row.created_at;
+      perUser.set(key, cur);
+    }
+    const totals = {
+      messages: data?.length ?? 0,
+      questions: (data ?? []).filter((r) => r.role === "user").length,
+      users: perUser.size,
+    };
+    return { totals, per_user: Array.from(perUser.values()).sort((a, b) => b.questions - a.questions) };
+  });
+
+export const listCimaiseMessagesAdmin = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) => z.object({ user_id: z.string().uuid() }).parse(i))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const { data: rows } = await supabaseAdmin
+      .from("cimaise_messages")
+      .select("id, role, content, created_at")
+      .eq("user_id", data.user_id)
+      .order("created_at", { ascending: true })
+      .limit(500);
+    return rows ?? [];
+  });
+
+export const deleteCimaiseUserHistoryAdmin = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) => z.object({ user_id: z.string().uuid() }).parse(i))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const { error } = await supabaseAdmin.from("cimaise_messages").delete().eq("user_id", data.user_id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });

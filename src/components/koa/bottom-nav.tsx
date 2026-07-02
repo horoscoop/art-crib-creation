@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, Bell, ScanLine, Shield, Eye, MessageCircle, LayoutDashboard, FileText } from "lucide-react";
+import { Home, Bell, ScanLine, Shield, Eye, MessageCircle, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRoles } from "@/lib/use-roles";
 import { useActiveAlertsCount } from "@/lib/use-active-alerts";
@@ -14,7 +14,7 @@ export function BottomNav() {
         { to: "/dashboard", label: "Supervision", icon: LayoutDashboard },
         { to: "/", label: "Œuvres", icon: Home },
         { to: "/alerts", label: "Alertes", icon: Bell, badge: activeAlerts },
-        { to: "/compliance", label: "Rapport", icon: FileText },
+        { to: "/chat", label: "Cimaise", icon: MessageCircle },
         { to: "/admin", label: "Admin", icon: Shield },
       ]
     : isExpert

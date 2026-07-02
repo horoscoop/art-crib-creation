@@ -1,8 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const InputSchema = z.object({
   mode: z.enum(["recommendation", "diagnostic"]),
+  artwork_id: z.string().uuid().optional().nullable(),
   context: z.object({
     weight_kg: z.number().nullable().optional(),
     height_m: z.number().nullable().optional(),
@@ -63,52 +65,35 @@ Mission : à partir des photos (œuvre + mur), produire une recommandation d'acc
 ${TAXONOMIE}
 
 Méthode :
-1. Classifie le mur (texture, indices visuels : joints, grain, peinture).
-2. Classifie le média (toile, bois, PBA, sculpture, etc.).
-3. Estime le poids si non fourni (fourchette basse–haute en kg).
+1. Classifie le mur.
+2. Classifie le média.
+3. Estime le poids si non fourni.
 4. Calcule charge_cible_kg = poids × 4.
-5. Choisis le kit KOA adapté (cf. catalogue).
-6. Lève les alertes : bois → taquets mobiles ; PBA → manipulation craquelures ; humidité → bannir adhésif structural ; placo + charge élevée → renforcer ou changer de point d'ancrage.
-7. Calcule un scoring_securite (0–100) selon adéquation kit/charge/support.
+5. Choisis le kit KOA adapté.
+6. Lève les alertes pertinentes.
+7. Calcule un scoring_securite (0–100).
 
-Tu DOIS répondre STRICTEMENT en JSON valide (pas de markdown autour, pas de \`\`\`) avec ce schéma :
+Réponds STRICTEMENT en JSON valide (pas de markdown) :
 {
   "mode": "recommendation",
-  "mur_type": "string (clé taxonomie)",
-  "mur_confiance": "low|medium|high",
-  "media_type": "string (clé taxonomie)",
-  "poids_estime_kg": number,
-  "charge_cible_kg": number,
-  "kit_recommande": "string (clé catalogue)",
-  "kit_justification": "string (1-2 phrases FR)",
-  "scoring_securite": number,
-  "alertes": ["string FR", ...],
-  "rapport_md": "string Markdown FR détaillé : ## Analyse mur ## Analyse œuvre ## Charge cible ## Kit recommandé ## Points de vigilance"
+  "mur_type": "string", "mur_confiance": "low|medium|high",
+  "media_type": "string", "poids_estime_kg": number, "charge_cible_kg": number,
+  "kit_recommande": "string", "kit_justification": "string",
+  "scoring_securite": number, "alertes": ["string"], "rapport_md": "string"
 }`;
 
 const PROMPT_DIAG = `Tu es ingénieur KOA, diagnostic d'un système d'accroche installé.
 
 ${TAXONOMIE}
 
-Méthode :
-1. Identifie le mur et le système installé.
-2. Détecte chaque signature de défaillance (fatigue, corrosion, support, fluage, systémique) avec un niveau.
-3. Calcule R_global puis scoring_securite (%).
-4. Recommande une intervention (aucune / surveillance / remplacement urgent).
-5. Propose le kit KOA de remplacement si nécessaire.
-
-Tu DOIS répondre STRICTEMENT en JSON valide (pas de markdown autour) :
+Réponds STRICTEMENT en JSON :
 {
   "mode": "diagnostic",
-  "mur_type": "string",
-  "systeme_actuel": "string",
+  "mur_type": "string", "systeme_actuel": "string",
   "signatures": [{"type": "string", "niveau": "mineur|modere|majeur|critique"}],
-  "r_global": number,
-  "scoring_securite": number,
+  "r_global": number, "scoring_securite": number,
   "intervention": "aucune|surveillance|remplacement|urgent",
-  "kit_recommande": "string|null",
-  "alertes": ["string FR", ...],
-  "rapport_md": "string Markdown FR : ## Signatures détectées ## Indice R_global ## Recommandation"
+  "kit_recommande": "string|null", "alertes": ["string"], "rapport_md": "string"
 }`;
 
 export type VisionReport = {
@@ -130,8 +115,9 @@ export type VisionReport = {
 };
 
 export const analyzeKoaVision = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => InputSchema.parse(d))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     const key = process.env.LOVABLE_API_KEY;
     if (!key) throw new Error("Lovable AI indisponible.");
 
@@ -155,10 +141,7 @@ export const analyzeKoaVision = createServerFn({ method: "POST" })
       headers: { "Content-Type": "application/json", "Authorization": `Bearer ${key}` },
       body: JSON.stringify({
         model: "google/gemini-2.5-pro",
-        messages: [
-          { role: "system", content: system },
-          { role: "user", content },
-        ],
+        messages: [{ role: "system", content: system }, { role: "user", content }],
         response_format: { type: "json_object" },
       }),
     });
@@ -170,11 +153,9 @@ export const analyzeKoaVision = createServerFn({ method: "POST" })
 
     let parsed: VisionReport;
     try {
-      // Tolérance : enlever d'éventuels ```json
       const cleaned = String(raw).replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim();
       parsed = JSON.parse(cleaned);
     } catch {
-      // Fallback : renvoyer un rapport minimal avec le texte brut
       parsed = {
         mode: data.mode,
         scoring_securite: 0,
@@ -183,11 +164,24 @@ export const analyzeKoaVision = createServerFn({ method: "POST" })
       };
     }
 
-    // Garde-fous numériques
     if (typeof parsed.scoring_securite !== "number") parsed.scoring_securite = 0;
     parsed.scoring_securite = Math.max(0, Math.min(100, Math.round(parsed.scoring_securite)));
     if (!Array.isArray(parsed.alertes)) parsed.alertes = [];
     if (typeof parsed.rapport_md !== "string") parsed.rapport_md = "";
+
+    // Archivage automatique pour suivi administrateur (best-effort).
+    try {
+      await context.supabase.from("vision_diagnostics").insert({
+        user_id: context.userId,
+        artwork_id: data.artwork_id ?? null,
+        mode: data.mode,
+        scoring_securite: parsed.scoring_securite,
+        kit_recommande: parsed.kit_recommande ?? null,
+        report: parsed as any,
+      });
+    } catch {
+      // n'impacte pas la réponse utilisateur
+    }
 
     return { report: parsed };
   });

@@ -244,6 +244,33 @@ export type Database = {
         }
         Relationships: []
       }
+      cimaise_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          role: string
+          session_id: string | null
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          role: string
+          session_id?: string | null
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          role?: string
+          session_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       connection_logs: {
         Row: {
           created_at: string
@@ -511,6 +538,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          approved: boolean
           created_at: string
           full_name: string | null
           id: string
@@ -518,6 +546,7 @@ export type Database = {
           role: string
         }
         Insert: {
+          approved?: boolean
           created_at?: string
           full_name?: string | null
           id: string
@@ -525,6 +554,7 @@ export type Database = {
           role?: string
         }
         Update: {
+          approved?: boolean
           created_at?: string
           full_name?: string | null
           id?: string
@@ -739,6 +769,54 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      vision_diagnostics: {
+        Row: {
+          artwork_id: string | null
+          created_at: string
+          id: string
+          kit_recommande: string | null
+          mode: string
+          report: Json
+          scoring_securite: number | null
+          user_id: string
+        }
+        Insert: {
+          artwork_id?: string | null
+          created_at?: string
+          id?: string
+          kit_recommande?: string | null
+          mode: string
+          report: Json
+          scoring_securite?: number | null
+          user_id: string
+        }
+        Update: {
+          artwork_id?: string | null
+          created_at?: string
+          id?: string
+          kit_recommande?: string | null
+          mode?: string
+          report?: Json
+          scoring_securite?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vision_diagnostics_artwork_id_fkey"
+            columns: ["artwork_id"]
+            isOneToOne: false
+            referencedRelation: "artwork_inspection_status"
+            referencedColumns: ["artwork_id"]
+          },
+          {
+            foreignKeyName: "vision_diagnostics_artwork_id_fkey"
+            columns: ["artwork_id"]
+            isOneToOne: false
+            referencedRelation: "artworks"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
