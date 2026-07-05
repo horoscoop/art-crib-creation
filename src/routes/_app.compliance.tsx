@@ -45,7 +45,7 @@ function CompliancePage() {
   }
 
   const generate = async () => {
-    if (!form.institution || !form.responsable) return toast.error("Institution et responsable requis");
+    if (!form.institution.trim() || !form.responsable.trim()) return toast.error("Institution et responsable requis");
     setBusy(true);
     try {
       const startIso = new Date(form.start_date + "T00:00:00Z").toISOString();
