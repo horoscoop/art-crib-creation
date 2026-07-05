@@ -19,6 +19,7 @@ import { Route as AppScanRouteImport } from './routes/_app.scan'
 import { Route as AppInspectionsRouteImport } from './routes/_app.inspections'
 import { Route as AppGatewaysRouteImport } from './routes/_app.gateways'
 import { Route as AppExpertisesRouteImport } from './routes/_app.expertises'
+import { Route as AppExpertLabRouteImport } from './routes/_app.expert-lab'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
 import { Route as AppComplianceRouteImport } from './routes/_app.compliance'
 import { Route as AppChatRouteImport } from './routes/_app.chat'
@@ -77,6 +78,11 @@ const AppExpertisesRoute = AppExpertisesRouteImport.update({
   path: '/expertises',
   getParentRoute: () => AppRoute,
 } as any)
+const AppExpertLabRoute = AppExpertLabRouteImport.update({
+  id: '/expert-lab',
+  path: '/expert-lab',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppDashboardRoute = AppDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -127,6 +133,7 @@ export interface FileRoutesByFullPath {
   '/chat': typeof AppChatRoute
   '/compliance': typeof AppComplianceRoute
   '/dashboard': typeof AppDashboardRoute
+  '/expert-lab': typeof AppExpertLabRoute
   '/expertises': typeof AppExpertisesRoute
   '/gateways': typeof AppGatewaysRoute
   '/inspections': typeof AppInspectionsRoute
@@ -145,6 +152,7 @@ export interface FileRoutesByTo {
   '/chat': typeof AppChatRoute
   '/compliance': typeof AppComplianceRoute
   '/dashboard': typeof AppDashboardRoute
+  '/expert-lab': typeof AppExpertLabRoute
   '/expertises': typeof AppExpertisesRoute
   '/gateways': typeof AppGatewaysRoute
   '/inspections': typeof AppInspectionsRoute
@@ -166,6 +174,7 @@ export interface FileRoutesById {
   '/_app/chat': typeof AppChatRoute
   '/_app/compliance': typeof AppComplianceRoute
   '/_app/dashboard': typeof AppDashboardRoute
+  '/_app/expert-lab': typeof AppExpertLabRoute
   '/_app/expertises': typeof AppExpertisesRoute
   '/_app/gateways': typeof AppGatewaysRoute
   '/_app/inspections': typeof AppInspectionsRoute
@@ -188,6 +197,7 @@ export interface FileRouteTypes {
     | '/chat'
     | '/compliance'
     | '/dashboard'
+    | '/expert-lab'
     | '/expertises'
     | '/gateways'
     | '/inspections'
@@ -206,6 +216,7 @@ export interface FileRouteTypes {
     | '/chat'
     | '/compliance'
     | '/dashboard'
+    | '/expert-lab'
     | '/expertises'
     | '/gateways'
     | '/inspections'
@@ -226,6 +237,7 @@ export interface FileRouteTypes {
     | '/_app/chat'
     | '/_app/compliance'
     | '/_app/dashboard'
+    | '/_app/expert-lab'
     | '/_app/expertises'
     | '/_app/gateways'
     | '/_app/inspections'
@@ -318,6 +330,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppExpertisesRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/expert-lab': {
+      id: '/_app/expert-lab'
+      path: '/expert-lab'
+      fullPath: '/expert-lab'
+      preLoaderRoute: typeof AppExpertLabRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/dashboard': {
       id: '/_app/dashboard'
       path: '/dashboard'
@@ -383,6 +402,7 @@ interface AppRouteChildren {
   AppChatRoute: typeof AppChatRoute
   AppComplianceRoute: typeof AppComplianceRoute
   AppDashboardRoute: typeof AppDashboardRoute
+  AppExpertLabRoute: typeof AppExpertLabRoute
   AppExpertisesRoute: typeof AppExpertisesRoute
   AppGatewaysRoute: typeof AppGatewaysRoute
   AppInspectionsRoute: typeof AppInspectionsRoute
@@ -399,6 +419,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppChatRoute: AppChatRoute,
   AppComplianceRoute: AppComplianceRoute,
   AppDashboardRoute: AppDashboardRoute,
+  AppExpertLabRoute: AppExpertLabRoute,
   AppExpertisesRoute: AppExpertisesRoute,
   AppGatewaysRoute: AppGatewaysRoute,
   AppInspectionsRoute: AppInspectionsRoute,
