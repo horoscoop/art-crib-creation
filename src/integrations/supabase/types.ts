@@ -244,6 +244,62 @@ export type Database = {
         }
         Relationships: []
       }
+      catalog_suggestions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          decided_at: string | null
+          decided_by: string | null
+          decision_note: string | null
+          id: string
+          linked_highlight_id: string | null
+          priority: string
+          rationale: string
+          status: Database["public"]["Enums"]["suggestion_status"]
+          target: Database["public"]["Enums"]["suggestion_target"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_note?: string | null
+          id?: string
+          linked_highlight_id?: string | null
+          priority?: string
+          rationale: string
+          status?: Database["public"]["Enums"]["suggestion_status"]
+          target: Database["public"]["Enums"]["suggestion_target"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_note?: string | null
+          id?: string
+          linked_highlight_id?: string | null
+          priority?: string
+          rationale?: string
+          status?: Database["public"]["Enums"]["suggestion_status"]
+          target?: Database["public"]["Enums"]["suggestion_target"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_suggestions_linked_highlight_id_fkey"
+            columns: ["linked_highlight_id"]
+            isOneToOne: false
+            referencedRelation: "highlights"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cimaise_messages: {
         Row: {
           content: string
@@ -419,6 +475,51 @@ export type Database = {
         }
         Relationships: []
       }
+      highlights: {
+        Row: {
+          category: Database["public"]["Enums"]["highlight_category"]
+          created_at: string
+          created_by: string | null
+          id: string
+          impact: Database["public"]["Enums"]["highlight_impact"]
+          source_label: string | null
+          source_url: string | null
+          status: Database["public"]["Enums"]["highlight_status"]
+          summary: string
+          title: string
+          updated_at: string
+          watch_axis: string | null
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["highlight_category"]
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          impact?: Database["public"]["Enums"]["highlight_impact"]
+          source_label?: string | null
+          source_url?: string | null
+          status?: Database["public"]["Enums"]["highlight_status"]
+          summary: string
+          title: string
+          updated_at?: string
+          watch_axis?: string | null
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["highlight_category"]
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          impact?: Database["public"]["Enums"]["highlight_impact"]
+          source_label?: string | null
+          source_url?: string | null
+          status?: Database["public"]["Enums"]["highlight_status"]
+          summary?: string
+          title?: string
+          updated_at?: string
+          watch_axis?: string | null
+        }
+        Relationships: []
+      }
       inspections: {
         Row: {
           artwork_id: string
@@ -505,6 +606,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      market_competitors: {
+        Row: {
+          antivol_renforce: string
+          charge_lourde: string
+          competitor_name: string
+          configurateur_digital: string
+          created_at: string
+          eclairage_integre: string
+          id: string
+          instruments_mesure: string
+          is_koa: boolean
+          notes: string | null
+          segment: string
+          source_url: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          antivol_renforce?: string
+          charge_lourde?: string
+          competitor_name: string
+          configurateur_digital?: string
+          created_at?: string
+          eclairage_integre?: string
+          id?: string
+          instruments_mesure?: string
+          is_koa?: boolean
+          notes?: string | null
+          segment: string
+          source_url?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          antivol_renforce?: string
+          charge_lourde?: string
+          competitor_name?: string
+          configurateur_digital?: string
+          created_at?: string
+          eclairage_integre?: string
+          id?: string
+          instruments_mesure?: string
+          is_koa?: boolean
+          notes?: string | null
+          segment?: string
+          source_url?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
       }
       notification_preferences: {
         Row: {
@@ -864,6 +1016,11 @@ export type Database = {
         | "musee"
         | "galerie"
         | "technicien"
+      highlight_category: "technique" | "marche" | "reglementaire" | "interne"
+      highlight_impact: "faible" | "moyen" | "fort"
+      highlight_status: "nouveau" | "traite" | "archive"
+      suggestion_status: "propose" | "a_l_etude" | "adopte" | "rejete"
+      suggestion_target: "produit_physique" | "catalogue_logiciel"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1008,6 +1165,11 @@ export const Constants = {
         "galerie",
         "technicien",
       ],
+      highlight_category: ["technique", "marche", "reglementaire", "interne"],
+      highlight_impact: ["faible", "moyen", "fort"],
+      highlight_status: ["nouveau", "traite", "archive"],
+      suggestion_status: ["propose", "a_l_etude", "adopte", "rejete"],
+      suggestion_target: ["produit_physique", "catalogue_logiciel"],
     },
   },
 } as const
