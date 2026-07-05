@@ -26,7 +26,7 @@ function CompliancePage() {
 
   const [form, setForm] = useState({
     institution: "",
-    responsable: "",
+    responsable: user?.email ?? "",
     reference: `KOA-${new Date().getFullYear()}-01`,
     start_date: yearStart,
     end_date: today,
