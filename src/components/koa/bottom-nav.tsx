@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, Bell, ScanLine, Shield, Eye, MessageCircle, LayoutDashboard } from "lucide-react";
+import { Home, Bell, ScanLine, Shield, Eye, MessageCircle, LayoutDashboard, FlaskConical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRoles } from "@/lib/use-roles";
 import { useActiveAlertsCount } from "@/lib/use-active-alerts";
@@ -14,6 +14,7 @@ export function BottomNav() {
         { to: "/dashboard", label: "Supervision", icon: LayoutDashboard },
         { to: "/", label: "Œuvres", icon: Home },
         { to: "/alerts", label: "Alertes", icon: Bell, badge: activeAlerts },
+        { to: "/expert-lab", label: "Expert Lab", icon: FlaskConical },
         { to: "/chat", label: "Cimaise", icon: MessageCircle },
         { to: "/admin", label: "Admin", icon: Shield },
       ]
@@ -22,6 +23,7 @@ export function BottomNav() {
         { to: "/dashboard", label: "Supervision", icon: LayoutDashboard },
         { to: "/", label: "Œuvres", icon: Home },
         { to: "/alerts", label: "Alertes", icon: Bell, badge: activeAlerts },
+        { to: "/expert-lab", label: "Expert Lab", icon: FlaskConical },
         { to: "/vision", label: "Vision", icon: Eye },
         { to: "/chat", label: "Cimaise", icon: MessageCircle },
       ]
@@ -35,7 +37,7 @@ export function BottomNav() {
 
   return (
     <nav className="fixed bottom-0 inset-x-0 z-40 border-t border-border bg-background/95 backdrop-blur">
-      <ul className="grid grid-cols-5 max-w-md mx-auto">
+      <ul className={cn("grid max-w-md mx-auto", items.length === 6 ? "grid-cols-6" : "grid-cols-5")}>
         {items.map(({ to, label, icon: Icon, badge }) => {
           const active = to === "/" ? path === "/" : path.startsWith(to);
           return (
