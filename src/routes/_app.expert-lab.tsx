@@ -80,10 +80,22 @@ function HighlightsTab() {
   const list = useServerFn(listHighlights);
   const create = useServerFn(createHighlight);
   const setStatus = useServerFn(updateHighlightStatus);
+  const runAnalysis = useServerFn(runWatchAnalysis);
   const { data: rows = [], isLoading } = useQuery({ queryKey: ["highlights"], queryFn: () => list({ data: {} }) });
 
   const [open, setOpen] = useState(false);
+  const [running, setRunning] = useState(false);
   const [form, setForm] = useState({ category: "marche", impact: "moyen", title: "", summary: "", source_label: "" });
+
+  const relaunch = async () => {
+    setRunning(true);
+    try {
+      const r = await runAnalysis();
+      toast.success(`${r.inserted} nouveau${r.inserted > 1 ? "x" : ""} fait${r.inserted > 1 ? "s" : ""} marquant${r.inserted > 1 ? "s" : ""} généré${r.inserted > 1 ? "s" : ""}`);
+      qc.invalidateQueries({ queryKey: ["highlights"] });
+    } catch (e: any) { toast.error(e.message ?? "Analyse impossible"); }
+    finally { setRunning(false); }
+  };
 
   const submit = async () => {
     if (!form.title.trim() || !form.summary.trim()) return toast.error("Titre et résumé requis");
