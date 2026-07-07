@@ -2,11 +2,11 @@ import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { ChevronLeft, Radar, BarChart3, Lightbulb, Plus } from "lucide-react";
+import { ChevronLeft, Radar, BarChart3, Lightbulb, Plus, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { useRoles } from "@/lib/use-roles";
 import {
-  listHighlights, createHighlight, updateHighlightStatus,
+  listHighlights, createHighlight, updateHighlightStatus, runWatchAnalysis,
   listCompetitors, upsertCompetitor,
   listSuggestions, createSuggestion, updateSuggestionStatus,
 } from "@/lib/expert-lab.functions";
@@ -80,10 +80,22 @@ function HighlightsTab() {
   const list = useServerFn(listHighlights);
   const create = useServerFn(createHighlight);
   const setStatus = useServerFn(updateHighlightStatus);
+  const runAnalysis = useServerFn(runWatchAnalysis);
   const { data: rows = [], isLoading } = useQuery({ queryKey: ["highlights"], queryFn: () => list({ data: {} }) });
 
   const [open, setOpen] = useState(false);
+  const [running, setRunning] = useState(false);
   const [form, setForm] = useState({ category: "marche", impact: "moyen", title: "", summary: "", source_label: "" });
+
+  const relaunch = async () => {
+    setRunning(true);
+    try {
+      const r = await runAnalysis();
+      toast.success(`${r.inserted} nouveau${r.inserted > 1 ? "x" : ""} fait${r.inserted > 1 ? "s" : ""} marquant${r.inserted > 1 ? "s" : ""} généré${r.inserted > 1 ? "s" : ""}`);
+      qc.invalidateQueries({ queryKey: ["highlights"] });
+    } catch (e: any) { toast.error(e.message ?? "Analyse impossible"); }
+    finally { setRunning(false); }
+  };
 
   const submit = async () => {
     if (!form.title.trim() || !form.summary.trim()) return toast.error("Titre et résumé requis");
@@ -105,10 +117,15 @@ function HighlightsTab() {
 
   return (
     <div className="mt-5 space-y-4">
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild>
-          <Button variant="outline" size="sm" className="w-full gap-1.5"><Plus className="size-3.5" /> Nouveau fait marquant</Button>
-        </DialogTrigger>
+      <div className="grid grid-cols-2 gap-2">
+        <Button onClick={relaunch} disabled={running} size="sm" className="gap-1.5">
+          <RefreshCw className={cn("size-3.5", running && "animate-spin")} />
+          {running ? "Analyse…" : "Relancer l'analyse"}
+        </Button>
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="sm" className="gap-1.5"><Plus className="size-3.5" /> Fait marquant</Button>
+          </DialogTrigger>
         <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle className="serif text-2xl font-normal">Fait marquant</DialogTitle></DialogHeader>
           <div className="space-y-3">
@@ -148,6 +165,7 @@ function HighlightsTab() {
           </div>
         </DialogContent>
       </Dialog>
+      </div>
 
       {isLoading && <p className="text-sm text-muted-foreground">Chargement…</p>}
       {!isLoading && rows.length === 0 && <p className="text-sm text-muted-foreground">Aucun fait marquant enregistré.</p>}
