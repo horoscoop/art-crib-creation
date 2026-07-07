@@ -165,6 +165,7 @@ function HighlightsTab() {
           </div>
         </DialogContent>
       </Dialog>
+      </div>
 
       {isLoading && <p className="text-sm text-muted-foreground">Chargement…</p>}
       {!isLoading && rows.length === 0 && <p className="text-sm text-muted-foreground">Aucun fait marquant enregistré.</p>}
