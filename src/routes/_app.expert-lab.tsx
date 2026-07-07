@@ -2,11 +2,11 @@ import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { ChevronLeft, Radar, BarChart3, Lightbulb, Plus } from "lucide-react";
+import { ChevronLeft, Radar, BarChart3, Lightbulb, Plus, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { useRoles } from "@/lib/use-roles";
 import {
-  listHighlights, createHighlight, updateHighlightStatus,
+  listHighlights, createHighlight, updateHighlightStatus, runWatchAnalysis,
   listCompetitors, upsertCompetitor,
   listSuggestions, createSuggestion, updateSuggestionStatus,
 } from "@/lib/expert-lab.functions";
