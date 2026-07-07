@@ -117,10 +117,15 @@ function HighlightsTab() {
 
   return (
     <div className="mt-5 space-y-4">
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild>
-          <Button variant="outline" size="sm" className="w-full gap-1.5"><Plus className="size-3.5" /> Nouveau fait marquant</Button>
-        </DialogTrigger>
+      <div className="grid grid-cols-2 gap-2">
+        <Button onClick={relaunch} disabled={running} size="sm" className="gap-1.5">
+          <RefreshCw className={cn("size-3.5", running && "animate-spin")} />
+          {running ? "Analyse…" : "Relancer l'analyse"}
+        </Button>
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="sm" className="gap-1.5"><Plus className="size-3.5" /> Fait marquant</Button>
+          </DialogTrigger>
         <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle className="serif text-2xl font-normal">Fait marquant</DialogTitle></DialogHeader>
           <div className="space-y-3">
