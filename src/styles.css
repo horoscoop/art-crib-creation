@@ -117,3 +117,99 @@
     border-top: 1px solid var(--color-border);
   }
 }
+/* ============================================================
+   KOA Guardian — Extensions "Module Audit" au design system
+   existant ("mur blanc de galerie"). Aucune nouvelle couleur :
+   on réutilise --accent (ocre/terracotta), --border, --font-serif,
+   --ok / --vigilance / --destructive déjà définis dans styles.css.
+   À coller dans styles.css, dans un nouveau @layer components,
+   après le @layer base existant.
+   ============================================================ */
+
+@layer components {
+  /* Bandeau d'en-tête de section (repris du prototype : carte blanche,
+     cercle décoratif discret en fond, eyebrow + titre serif italique).
+     Remplace le fond doré du prototype par --card / --border existants. */
+  .gallery-banner {
+    position: relative;
+    overflow: hidden;
+    background-color: var(--color-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: 2rem;
+  }
+  .gallery-banner::after {
+    content: "";
+    position: absolute;
+    top: -5rem;
+    right: -5rem;
+    width: 16rem;
+    height: 16rem;
+    border-radius: 9999px;
+    background-color: var(--color-background);
+    border: 1px solid var(--color-border);
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  /* Petit libellé "eyebrow" en majuscules espacées, coloré en accent
+     (équivalent du "Cabinet d'Audit, Assurance & Scénographie" du prototype) */
+  .gallery-eyebrow {
+    font-size: 0.625rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-weight: 700;
+    color: var(--color-accent);
+  }
+
+  /* Titre de section : serif + mot-clé en italique accentué,
+     cohérent avec la règle h1/h2/h3 { font-family: var(--font-serif) } existante */
+  .gallery-title em {
+    font-style: italic;
+    color: var(--color-accent);
+  }
+
+  /* Onglets "pill" façon prototype (fleet / maintenance / ai_consult),
+     réutilisables pour Registre / Journal de maintenance / Consultation IA */
+  .gallery-tab {
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-lg);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    border: 1px solid transparent;
+    color: var(--color-muted-foreground);
+    transition: all 150ms ease;
+  }
+  .gallery-tab:hover {
+    color: var(--color-foreground);
+    background-color: var(--color-secondary);
+  }
+  .gallery-tab[data-active="true"] {
+    background-color: var(--color-primary);
+    color: var(--color-primary-foreground);
+    border-color: var(--color-primary);
+  }
+
+  /* Carte de fiche œuvre (registre "flotte") — reprend l'esprit
+     des cartes du prototype mais avec le hairline sobre existant */
+  .gallery-card-hover {
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+  }
+  .gallery-card-hover:hover {
+    border-color: var(--color-accent);
+    box-shadow: 0 1px 3px oklch(0 0 0 / 0.06);
+  }
+
+  /* Zone de dépôt de fichiers (drag & drop justificatifs) */
+  .gallery-dropzone {
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-secondary);
+    transition: border-color 150ms ease, background-color 150ms ease;
+  }
+  .gallery-dropzone[data-dragging="true"] {
+    border-color: var(--color-accent);
+    background-color: oklch(0.62 0.13 45 / 0.06);
+  }
+}
