@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ArtworkRegistryList } from "@/components/koa/artwork-registry-list";
 
 export const Route = createFileRoute("/_app/inspections")({
   head: () => ({ meta: [{ title: "Suivi périodique — KOA Guardian" }] }),
@@ -126,9 +127,11 @@ function InspectionsPage() {
       </header>
 
       <Tabs defaultValue="journal" className="mt-6">
-        <TabsList className="grid grid-cols-2 w-full">
+        <TabsList className="grid grid-cols-3 w-full">
           <TabsTrigger value="journal">Journal</TabsTrigger>
+          <TabsTrigger value="registre">Registre</TabsTrigger>
           <TabsTrigger value="planning">
+            
             Planning
             {groupedPlanning.en_retard.length + groupedPlanning.echeance_proche.length > 0 && (
               <span className="ml-2 text-[10px] mono bg-destructive text-destructive-foreground px-1.5 rounded">
@@ -172,7 +175,12 @@ function InspectionsPage() {
           <PlanningBlock title="Échéance sous 7 jours" rows={groupedPlanning.echeance_proche} status="echeance_proche" />
           <PlanningBlock title="Jamais inspecté" rows={groupedPlanning.jamais_inspecte} status="jamais_inspecte" />
           <PlanningBlock title="À jour" rows={groupedPlanning.a_jour} status="a_jour" collapsed />
+          <TabsContent value="registre" className="mt-4">
+          <ArtworkRegistryList />
         </TabsContent>
+      </Tabs>
+
+        
       </Tabs>
     </main>
   );
