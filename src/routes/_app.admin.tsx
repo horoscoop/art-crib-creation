@@ -5,6 +5,7 @@ import { useState, Fragment } from "react";
 import {
   ChevronLeft, Users, LayoutGrid, Activity, Radio, Download, Database,
   Award, Eye, MessageCircle, Check, X, Trash2, ClipboardList, FileText,
+  Compass, UserPlus,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useIsAdmin } from "@/lib/use-is-admin";
@@ -28,6 +29,8 @@ import {
   deleteCimaiseUserHistoryAdmin,
   ASSIGNABLE_ROLES,
 } from "@/lib/admin.functions";
+import { createUserAdmin } from "@/lib/admin.functions";
+import { DesignAdvisorTab } from "@/components/koa/design-advisor-tab";
 import { exportClientReport } from "@/lib/exports.functions";
 import { createBackup, listBackups, downloadBackup, deleteBackup } from "@/lib/backups.functions";
 import { formatDateTime } from "@/lib/koa-helpers";
@@ -164,9 +167,8 @@ function UsersTab() {
 
   const pending = users.filter((u: any) => !u.approved);
 
-  return (
+  return (return (
     <div className="space-y-8">
-      {/* ↓ Nouveau bloc à coller ici ↓ */}
       <div className="gallery-banner mb-6 flex flex-wrap items-end gap-3">
         <div className="flex-1 min-w-[200px]">
           <label className="text-[10px] tracking-widest uppercase text-muted-foreground block mb-1">Ajouter un compte</label>
@@ -190,12 +192,7 @@ function UsersTab() {
           <UserPlus className="size-3.5 mr-1.5" /> Inviter
         </Button>
       </div>
-      {/* ↑ Fin du nouveau bloc ↑ */}
 
-      {pending.length > 0 && (
-        <section className="border border-amber-500/50 bg-amber-500/5 rounded-sm p-4">
-          ... (reste du code inchangé)
-    <div className="space-y-8">
       {pending.length > 0 && (
         <section className="border border-amber-500/50 bg-amber-500/5 rounded-sm p-4">
           <h3 className="text-[10px] uppercase tracking-widest text-amber-600 dark:text-amber-500 mb-3">
