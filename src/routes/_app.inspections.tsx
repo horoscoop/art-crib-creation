@@ -179,9 +179,6 @@ function InspectionsPage() {
           <ArtworkRegistryList />
         </TabsContent>
       </Tabs>
-
-        
-      </Tabs>
     </main>
   );
 }
