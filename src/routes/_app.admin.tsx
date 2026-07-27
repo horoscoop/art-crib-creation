@@ -166,6 +166,36 @@ function UsersTab() {
 
   return (
     <div className="space-y-8">
+      {/* ↓ Nouveau bloc à coller ici ↓ */}
+      <div className="gallery-banner mb-6 flex flex-wrap items-end gap-3">
+        <div className="flex-1 min-w-[200px]">
+          <label className="text-[10px] tracking-widest uppercase text-muted-foreground block mb-1">Ajouter un compte</label>
+          <input
+            type="email" placeholder="email@exemple.com" value={newEmail}
+            onChange={(e) => setNewEmail(e.target.value)}
+            className="w-full bg-secondary border border-border px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-accent"
+          />
+        </div>
+        <div>
+          <label className="text-[10px] tracking-widest uppercase text-muted-foreground block mb-1">Rôle initial</label>
+          <select
+            value={newRole} onChange={(e) => setNewRole(e.target.value as any)}
+            className="bg-secondary border border-border px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-accent"
+          >
+            <option value="">Aucun</option>
+            {ASSIGNABLE_ROLES.map((r) => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
+          </select>
+        </div>
+        <Button onClick={addAccount} className="rounded-sm h-10 text-xs tracking-widest uppercase">
+          <UserPlus className="size-3.5 mr-1.5" /> Inviter
+        </Button>
+      </div>
+      {/* ↑ Fin du nouveau bloc ↑ */}
+
+      {pending.length > 0 && (
+        <section className="border border-amber-500/50 bg-amber-500/5 rounded-sm p-4">
+          ... (reste du code inchangé)
+    <div className="space-y-8">
       {pending.length > 0 && (
         <section className="border border-amber-500/50 bg-amber-500/5 rounded-sm p-4">
           <h3 className="text-[10px] uppercase tracking-widest text-amber-600 dark:text-amber-500 mb-3">
