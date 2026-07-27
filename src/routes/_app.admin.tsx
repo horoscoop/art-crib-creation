@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useIsAdmin } from "@/lib/use-is-admin";
+import { Button } from "@/components/ui/button";
 import {
   listUsersAdmin,
   setUserRoleAdmin,
