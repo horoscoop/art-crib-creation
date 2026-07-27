@@ -46,7 +46,7 @@ export const Route = createFileRoute("/_app/admin")({
   component: AdminConsole,
 });
 
-type Tab = "users" | "fleet" | "logs" | "expertises" | "vision" | "cimaise" | "exports" | "backups";
+type Tab = "users" | "fleet" | "logs" | "expertises" | "vision" | "cimaise" | "exports" | "backups" | "conception";
 
 function AdminConsole() {
   const isAdmin = useIsAdmin();
@@ -73,6 +73,7 @@ function AdminConsole() {
     { id: "cimaise", label: "Cimaise", icon: MessageCircle },
     { id: "exports", label: "Exports", icon: Download },
     { id: "backups", label: "Sauvegardes", icon: Database },
+    { id: "conception", label: "Conception", icon: Compass },
   ];
 
   return (
@@ -108,7 +109,8 @@ function AdminConsole() {
         {tab === "cimaise" && <CimaiseTab />}
         {tab === "exports" && <ExportsTab />}
         {tab === "backups" && <BackupsTab />}
-      </div>
+        {tab === "conception" && <DesignAdvisorTab />}
+       </div>
     </main>
   );
 }
@@ -122,6 +124,18 @@ function UsersTab() {
   const { data: users = [] } = useQuery({ queryKey: ["admin-users"], queryFn: () => list() });
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["admin-users"] });
+  const create = useServerFn(createUserAdmin);
+  const [newEmail, setNewEmail] = useState("");
+  const [newRole, setNewRole] = useState<typeof ASSIGNABLE_ROLES[number] | "">("");
+  const addAccount = async () => {
+    if (!newEmail.trim()) { toast.error("Adresse email requise"); return; }
+    try {
+      await create({ data: { email: newEmail.trim(), role: newRole || undefined } });
+      toast.success(`Invitation envoyée à ${newEmail}`);
+      setNewEmail(""); setNewRole("");
+      invalidate();
+    } catch (e: any) { toast.error(e.message ?? "Erreur"); }
+  };
 
   const toggle = async (userId: string, role: typeof ASSIGNABLE_ROLES[number], grant: boolean) => {
     try {
