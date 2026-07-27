@@ -278,3 +278,42 @@ export const deleteCimaiseUserHistoryAdmin = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+// Création de compte depuis la console admin — envoie une invitation par email
+// (l'utilisateur choisit son mot de passe via le lien reçu), avec attribution
+// optionnelle d'un rôle dès la création (ex. admin).
+export const createUserAdmin = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) =>
+    z.object({
+      email: z.string().email(),
+      fullName: z.string().max(200).optional(),
+      role: z.enum(ASSIGNABLE_ROLES).optional(),
+    }).parse(i),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+
+    const { data: invited, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(data.email, {
+      data: data.fullName ? { full_name: data.fullName } : undefined,
+    });
+    if (error) throw new Error(error.message);
+    const newUserId = invited.user.id;
+
+    // Profil approuvé d'office (créé par un admin = pas besoin de validation manuelle)
+    await supabaseAdmin.from("profiles").upsert({
+      id: newUserId,
+      full_name: data.fullName ?? null,
+      approved: true,
+    });
+
+    if (data.role) {
+      await supabaseAdmin.from("user_roles").upsert(
+        { user_id: newUserId, role: data.role },
+        { onConflict: "user_id,role" },
+      );
+    }
+
+    return { ok: true, userId: newUserId };
+  });
+
