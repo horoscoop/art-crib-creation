@@ -168,7 +168,7 @@ function UsersTab() {
 
   const pending = users.filter((u: any) => !u.approved);
 
-  return (return (
+  return (
     <div className="space-y-8">
       <div className="gallery-banner mb-6 flex flex-wrap items-end gap-3">
         <div className="flex-1 min-w-[200px]">
