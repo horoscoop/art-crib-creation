@@ -174,8 +174,10 @@ function InspectionsPage() {
           <PlanningBlock title="En retard" rows={groupedPlanning.en_retard} status="en_retard" />
           <PlanningBlock title="Échéance sous 7 jours" rows={groupedPlanning.echeance_proche} status="echeance_proche" />
           <PlanningBlock title="Jamais inspecté" rows={groupedPlanning.jamais_inspecte} status="jamais_inspecte" />
-          <PlanningBlock title="À jour" rows={groupedPlanning.a_jour} status="a_jour" collapsed />
-          <TabsContent value="registre" className="mt-4">
+        <PlanningBlock title="À jour" rows={groupedPlanning.a_jour} status="a_jour" collapsed />
+        </TabsContent>
+
+        <TabsContent value="registre" className="mt-4">
           <ArtworkRegistryList />
         </TabsContent>
       </Tabs>
